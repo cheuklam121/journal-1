@@ -3,20 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeJournal Cloud</title>
+    <title>TradeJournal v7</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        /* Dynamic Viewport Height for better Mobile experience */
+        /* Mobile viewport fix */
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; height: 100dvh; overflow: hidden; }
         
-        /* Scrollbar hiding for cleaner look */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* Calendar Styles */
+        /* Calendar & Grid */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
         @media (min-width: 768px) { .calendar-grid { gap: 12px; } }
 
@@ -27,7 +26,7 @@
         .day-loss { background: #f43f5e; color: white; border: 1px solid #e11d48; }
         .day-neutral { background-color: white; border: 1px solid #e2e8f0; color: #64748b; }
         
-        /* FAB Animation */
+        /* FAB */
         .fab {
             position: absolute; bottom: 24px; right: 24px;
             width: 56px; height: 56px; border-radius: 50%;
@@ -38,6 +37,23 @@
         }
         .fab:active { transform: scale(0.90); }
 
+        /* Strategy Radio Chips */
+        .strategy-radio:checked + label {
+            background-color: #eff6ff; 
+            color: #2563eb;
+            border-color: #2563eb;
+            font-weight: 700;
+        }
+        
+        /* Badges */
+        .badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .badge-ma { background: #e0e7ff; color: #4338ca; }       /* Indigo */
+        .badge-sr { background: #ffedd5; color: #c2410c; }       /* Orange */
+        .badge-kc { background: #fae8ff; color: #a21caf; }       /* Fuchsia */
+        .badge-bo { background: #dcfce7; color: #15803d; }       /* Green */
+        .badge-news { background: #fee2e2; color: #b91c1c; }     /* Red */
+        .badge-default { background: #f1f5f9; color: #64748b; }  /* Gray */
+
         /* Modal */
         .modal-bg { background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); }
         .slide-up { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
@@ -46,27 +62,27 @@
 </head>
 <body class="flex flex-col md:flex-row text-slate-800">
 
-    <!-- DESKTOP SIDEBAR (Hidden on Mobile) -->
+    <!-- SIDEBAR (Desktop) -->
     <aside class="hidden md:flex w-80 bg-white border-r border-slate-200 flex-col z-20 shadow-sm">
         <div class="p-6 border-b border-slate-100">
             <h1 class="text-xl font-bold flex items-center gap-2 text-slate-800">
-                <i class="fa-solid fa-chart-pie text-blue-600"></i> TradeJournal
+                <i class="fa-solid fa-layer-group text-blue-600"></i> TradeJournal v7
             </h1>
         </div>
         <div class="p-6 flex-1 overflow-y-auto">
-            <div id="desktopFormContainer"></div> <!-- Form injected here -->
+            <div id="desktopFormContainer"></div>
         </div>
         <div class="p-4 border-t border-slate-100 bg-slate-50">
             <button onclick="openSettings()" class="flex items-center gap-2 text-sm text-slate-500 hover:text-blue-600 transition-colors w-full">
-                <i class="fa-solid fa-gear"></i> Sync Settings (GitHub)
+                <i class="fa-solid fa-gear"></i> Sync Settings
             </button>
         </div>
     </aside>
 
-    <!-- MAIN LAYOUT CONTAINER -->
+    <!-- MAIN LAYOUT -->
     <div class="flex-1 flex flex-col h-full relative bg-slate-50/50">
         
-        <!-- MOBILE TOP BAR (Fixed) -->
+        <!-- MOBILE TOP BAR -->
         <div class="md:hidden bg-white border-b border-slate-200 px-4 py-3 flex justify-between items-center shrink-0 z-30">
             <span class="font-bold text-lg tracking-tight text-slate-800">TradeJournal</span>
             <button onclick="openSettings()" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:bg-slate-50 rounded-full">
@@ -74,27 +90,22 @@
             </button>
         </div>
 
-        <!-- DASHBOARD STATS HEADER (Fixed, will not scroll away) -->
+        <!-- DASHBOARD HEADER -->
         <header class="bg-white md:bg-transparent border-b border-slate-200 md:border-none px-4 py-3 md:px-8 md:py-6 flex justify-between items-center shrink-0 z-20">
-            <!-- Month Navigation -->
             <div class="flex items-center gap-3 bg-slate-100 md:bg-white p-1 rounded-lg shadow-sm md:shadow-none">
                 <button onclick="changeMonth(-1)" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-white text-slate-600 transition-all"><i class="fa-solid fa-chevron-left text-xs"></i></button>
                 <span id="currentMonthDisplay" class="font-bold text-sm md:text-base min-w-[90px] text-center select-none text-slate-700">--</span>
                 <button onclick="changeMonth(1)" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-white text-slate-600 transition-all"><i class="fa-solid fa-chevron-right text-xs"></i></button>
             </div>
-            
-            <!-- Net P&L Display -->
             <div class="text-right">
                 <p class="text-[10px] md:text-xs text-slate-400 font-bold uppercase tracking-wider">Net P&L</p>
                 <p id="monthTotalDisplay" class="text-lg md:text-3xl font-bold leading-none">--</p>
             </div>
         </header>
 
-        <!-- SCROLLABLE CONTENT AREA (The only part that scrolls) -->
+        <!-- SCROLLABLE CALENDAR -->
         <div class="flex-1 overflow-y-auto p-2 md:p-8 no-scrollbar relative">
-            <div class="max-w-5xl mx-auto pb-24 md:pb-0"> <!-- Padding bottom for FAB on mobile -->
-                
-                <!-- Days Header -->
+            <div class="max-w-5xl mx-auto pb-24 md:pb-0">
                 <div class="grid grid-cols-7 mb-2 px-1">
                     <div class="text-center text-[10px] font-bold text-slate-400">SUN</div>
                     <div class="text-center text-[10px] font-bold text-slate-400">MON</div>
@@ -104,46 +115,80 @@
                     <div class="text-center text-[10px] font-bold text-slate-400">FRI</div>
                     <div class="text-center text-[10px] font-bold text-slate-400">SAT</div>
                 </div>
-                
-                <!-- Calendar -->
                 <div id="calendarGrid" class="calendar-grid"></div>
             </div>
         </div>
 
-        <!-- MOBILE FAB (Add Button) -->
-        <button onclick="openEntryModal()" class="fab md:hidden">
-            <i class="fa-solid fa-plus text-xl"></i>
-        </button>
+        <button onclick="openEntryModal()" class="fab md:hidden"><i class="fa-solid fa-plus text-xl"></i></button>
     </div>
 
-    <!-- ENTRY MODAL -->
+    <!-- ENTRY FORM MODAL -->
     <div id="entryModal" class="fixed inset-0 modal-bg hidden z-50 flex items-end md:items-center justify-center">
-        <div class="bg-white w-full md:w-96 rounded-t-2xl md:rounded-2xl shadow-2xl slide-up overflow-hidden">
-            <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <h3 class="font-bold text-slate-700">New Transaction</h3>
+        <div class="bg-white w-full md:w-96 rounded-t-2xl md:rounded-2xl shadow-2xl slide-up overflow-hidden max-h-[90dvh] flex flex-col">
+            <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
+                <h3 class="font-bold text-slate-700">New Entry</h3>
                 <button onclick="closeEntryModal()" class="w-8 h-8 rounded-full bg-slate-200 text-slate-500 md:hidden"><i class="fa-solid fa-times"></i></button>
             </div>
-            <div class="p-6">
-                <form id="entryForm" class="space-y-4">
+            
+            <div class="p-6 overflow-y-auto">
+                <form id="entryForm" class="space-y-5">
+                    <!-- Date -->
                     <div>
                         <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Date</label>
                         <input type="date" id="inputDate" class="w-full mt-1 p-3 bg-slate-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-700">
                     </div>
+                    
+                    <!-- Amount -->
                     <div>
-                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Amount ($)</label>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">P&L Amount</label>
                         <input type="number" id="inputAmount" step="0.01" placeholder="0.00" class="w-full mt-1 p-3 bg-slate-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-2xl font-bold text-slate-800">
                     </div>
+
+                    <!-- STRATEGY SELECTION (New Feature) -->
                     <div>
-                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Notes</label>
-                        <input type="text" id="inputNotes" placeholder="e.g. Long NVDA" class="w-full mt-1 p-3 bg-slate-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 block">Method</label>
+                        <div class="flex flex-wrap gap-2">
+                            <!-- SR Flip -->
+                            <div class="flex-1 min-w-[80px]">
+                                <input type="radio" name="strategy" id="strat_sr" value="SR Flip" class="strategy-radio hidden">
+                                <label for="strat_sr" class="block text-center text-xs py-2 px-1 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer transition-all hover:bg-slate-100 text-slate-500">SR Flip</label>
+                            </div>
+                            <!-- MA -->
+                            <div class="flex-1 min-w-[60px]">
+                                <input type="radio" name="strategy" id="strat_ma" value="MA" class="strategy-radio hidden">
+                                <label for="strat_ma" class="block text-center text-xs py-2 px-1 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer transition-all hover:bg-slate-100 text-slate-500">MA</label>
+                            </div>
+                            <!-- KC -->
+                            <div class="flex-1 min-w-[60px]">
+                                <input type="radio" name="strategy" id="strat_kc" value="KC" class="strategy-radio hidden">
+                                <label for="strat_kc" class="block text-center text-xs py-2 px-1 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer transition-all hover:bg-slate-100 text-slate-500">KC</label>
+                            </div>
+                            <!-- Break Out -->
+                            <div class="flex-1 min-w-[80px]">
+                                <input type="radio" name="strategy" id="strat_bo" value="Break Out" class="strategy-radio hidden">
+                                <label for="strat_bo" class="block text-center text-xs py-2 px-1 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer transition-all hover:bg-slate-100 text-slate-500">Break Out</label>
+                            </div>
+                            <!-- News -->
+                            <div class="flex-1 min-w-[60px]">
+                                <input type="radio" name="strategy" id="strat_news" value="News" class="strategy-radio hidden">
+                                <label for="strat_news" class="block text-center text-xs py-2 px-1 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer transition-all hover:bg-slate-100 text-slate-500">News</label>
+                            </div>
+                        </div>
                     </div>
+
+                    <!-- Notes -->
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Additional Notes</label>
+                        <input type="text" id="inputNotes" placeholder="Specifics..." class="w-full mt-1 p-3 bg-slate-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                    </div>
+
                     <button type="submit" class="w-full py-4 bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-200 active:scale-95 transition-transform">Save Entry</button>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- DAY DETAILS MODAL -->
+    <!-- DETAILS MODAL -->
     <div id="detailsModal" class="fixed inset-0 modal-bg hidden z-50 flex items-end md:items-center justify-center">
         <div class="bg-white w-full md:w-[480px] h-[70dvh] md:h-[600px] rounded-t-2xl md:rounded-2xl shadow-2xl slide-up flex flex-col">
             <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 md:rounded-t-2xl">
@@ -169,28 +214,16 @@
                 <i class="fa-brands fa-github text-xl"></i>
                 <h3 class="font-bold text-lg">GitHub Sync</h3>
             </div>
-            <p class="text-xs text-slate-500 mb-4 leading-relaxed">
-                Use a GitHub Gist to sync data across devices. 
-                <br>1. Create a token with <b>'gist'</b> permission.
-                <br>2. Create a secret Gist named <b>trade_journal.json</b> with content <b>[]</b>.
-            </p>
+            <p class="text-xs text-slate-500 mb-4">Token must have <b>'gist'</b> scope. Create secret gist named <b>trade_journal.json</b>.</p>
             <div class="space-y-3">
-                <div>
-                    <label class="text-[10px] font-bold text-slate-400 uppercase">Gist ID</label>
-                    <input type="text" id="settingGistId" placeholder="e.g. 8f4a2..." class="w-full p-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-500">
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-slate-400 uppercase">GitHub Token</label>
-                    <input type="password" id="settingToken" placeholder="ghp_..." class="w-full p-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-500">
-                </div>
+                <input type="text" id="settingGistId" placeholder="Gist ID" class="w-full p-2 border border-slate-200 rounded-lg text-sm">
+                <input type="password" id="settingToken" placeholder="Token (ghp_...)" class="w-full p-2 border border-slate-200 rounded-lg text-sm">
             </div>
             <div class="flex gap-3 mt-6">
-                <button onclick="saveSettings()" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-bold text-sm shadow-lg shadow-blue-200">Save & Sync</button>
+                <button onclick="saveSettings()" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-bold text-sm">Save</button>
                 <button onclick="document.getElementById('settingsModal').classList.add('hidden')" class="flex-1 bg-slate-100 text-slate-600 py-2 rounded-lg font-bold text-sm">Cancel</button>
             </div>
-            <div class="mt-6 pt-4 border-t border-slate-100 text-center">
-                <button onclick="exportData()" class="text-xs text-blue-500 hover:underline">Download Backup CSV</button>
-            </div>
+            <div class="mt-4 text-center"><button onclick="exportData()" class="text-xs text-blue-500 underline">Backup CSV</button></div>
         </div>
     </div>
 
@@ -200,81 +233,43 @@
         let currentDetailDateStr = null;
         const FILENAME = 'trade_journal.json';
 
-        // --- DATA LAYER (GITHUB GIST) ---
+        // --- DATA STORE ---
         const DataStore = {
-            config: JSON.parse(localStorage.getItem('tj_config_v6') || '{}'),
-
-            // LOAD DATA
+            config: JSON.parse(localStorage.getItem('tj_config_v7') || '{}'),
             load: async () => {
                 if (DataStore.config.gistId && DataStore.config.token) {
                     try {
                         const res = await fetch(`https://api.github.com/gists/${DataStore.config.gistId}`, {
-                            headers: {
-                                'Authorization': `token ${DataStore.config.token}`,
-                                'Accept': 'application/vnd.github+json'
-                            },
-                            cache: 'no-store'
+                            headers: { 'Authorization': `token ${DataStore.config.token}` }, cache: 'no-store'
                         });
-                        
                         if(res.ok) {
                             const json = await res.json();
-                            // GitHub returns file content as a string, we must parse it
                             if(json.files && json.files[FILENAME]) {
                                 const content = JSON.parse(json.files[FILENAME].content);
-                                localStorage.setItem('tj_data_v6', JSON.stringify(content));
+                                localStorage.setItem('tj_data_v7', JSON.stringify(content));
                                 return content;
                             }
                         }
-                    } catch(e) { console.error("Sync Error:", e); }
+                    } catch(e) { console.error(e); }
                 }
-                // Fallback to Local
-                return JSON.parse(localStorage.getItem('tj_data_v6') || '[]');
+                return JSON.parse(localStorage.getItem('tj_data_v7') || '[]');
             },
-
-            // SAVE DATA
             save: async (data) => {
-                // 1. Save Local
-                localStorage.setItem('tj_data_v6', JSON.stringify(data));
-                
-                // 2. Save Cloud
+                localStorage.setItem('tj_data_v7', JSON.stringify(data));
                 if (DataStore.config.gistId && DataStore.config.token) {
-                    try {
-                        await fetch(`https://api.github.com/gists/${DataStore.config.gistId}`, {
-                            method: 'PATCH',
-                            headers: { 
-                                'Authorization': `token ${DataStore.config.token}`,
-                                'Accept': 'application/vnd.github+json'
-                            },
-                            body: JSON.stringify({
-                                files: {
-                                    [FILENAME]: { content: JSON.stringify(data) }
-                                }
-                            })
-                        });
-                        console.log("Cloud Synced");
-                    } catch(e) { alert("Cloud Save Failed: Check keys"); }
+                    fetch(`https://api.github.com/gists/${DataStore.config.gistId}`, {
+                        method: 'PATCH',
+                        headers: { 'Authorization': `token ${DataStore.config.token}` },
+                        body: JSON.stringify({ files: { [FILENAME]: { content: JSON.stringify(data) } } })
+                    });
                 }
             },
-
-            add: async (entry) => {
-                const data = await DataStore.load();
-                data.push(entry);
-                await DataStore.save(data);
-                return data;
-            },
-
-            delete: async (id) => {
-                let data = await DataStore.load();
-                data = data.filter(d => d.id !== id);
-                await DataStore.save(data);
-                return data;
-            },
-
+            add: async (entry) => { const data = await DataStore.load(); data.push(entry); await DataStore.save(data); return data; },
+            delete: async (id) => { let data = await DataStore.load(); data = data.filter(d => d.id !== id); await DataStore.save(data); return data; },
             getAggregated: async (year, month) => {
                 const data = await DataStore.load();
                 const prefix = `${year}-${String(month+1).padStart(2,'0')}`;
                 const agg = {};
-                
                 data.filter(d => d.date.startsWith(prefix)).forEach(d => {
                     if(!agg[d.date]) agg[d.date] = { total: 0, count: 0 };
                     agg[d.date].total += d.amount;
@@ -282,30 +277,20 @@
                 });
                 return agg;
             },
-            
-            getByDate: async (dateStr) => {
-                return (await DataStore.load()).filter(d => d.date === dateStr);
-            }
+            getByDate: async (dateStr) => (await DataStore.load()).filter(d => d.date === dateStr)
         };
 
         // --- UI LOGIC ---
         async function init() {
-            // Inject Desktop Form
             if(window.innerWidth >= 768) {
-                const formHtml = document.getElementById('entryForm').innerHTML;
-                const container = document.getElementById('desktopFormContainer');
-                container.innerHTML = `<form id="desktopEntryForm" class="space-y-4">${formHtml}</form>`;
+                document.getElementById('desktopFormContainer').innerHTML = `<form id="desktopEntryForm" class="space-y-4">${document.getElementById('entryForm').innerHTML}</form>`;
                 document.getElementById('desktopEntryForm').addEventListener('submit', handleFormSubmit);
             }
-
-            // Set Date Defaults
             document.getElementById('inputDate').valueAsDate = new Date();
             
-            // Load Config
             const conf = DataStore.config;
             if(conf.gistId) document.getElementById('settingGistId').value = conf.gistId;
             if(conf.token) document.getElementById('settingToken').value = conf.token;
-
             await renderCalendar();
         }
 
@@ -313,82 +298,71 @@
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth();
             const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            
             document.getElementById('currentMonthDisplay').innerText = `${months[month]} ${year}`;
-            
             const agg = await DataStore.getAggregated(year, month);
             
-            // Total
             const total = Object.values(agg).reduce((s, d) => s + d.total, 0);
             const totalEl = document.getElementById('monthTotalDisplay');
             totalEl.innerText = (total>=0?'+':'') + total.toLocaleString('en-US', {style:'currency', currency:'USD'});
             totalEl.className = `text-lg md:text-3xl font-bold leading-none ${total>=0?'text-emerald-600':'text-rose-500'}`;
 
-            // Grid
             const grid = document.getElementById('calendarGrid');
             grid.innerHTML = '';
-            const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const firstDay = new Date(year, month, 1).getDay();
 
             for(let i=0; i<firstDay; i++) grid.appendChild(document.createElement('div'));
-
             for(let day=1; day<=daysInMonth; day++) {
                 const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
                 const dData = agg[dateStr];
-                
                 const cell = document.createElement('div');
                 cell.className = 'calendar-day rounded-lg md:rounded-xl p-1 relative cursor-pointer flex flex-col justify-between items-center md:items-start transition-all hover:shadow-md';
-                
                 if(dData) {
                     cell.classList.add(dData.total >= 0 ? 'day-profit' : 'day-loss');
-                    cell.innerHTML = `
-                        <span class="text-[10px] opacity-80 self-start ml-1 mt-1">${day}</span>
-                        <span class="text-xs md:text-sm font-bold">${formatMoneyShort(Math.abs(dData.total))}</span>
-                        <span class="text-[8px] opacity-75 mb-1">${dData.count > 1 ? 'x'+dData.count : ''}</span>
-                    `;
+                    cell.innerHTML = `<span class="text-[10px] opacity-80 self-start ml-1 mt-1">${day}</span><span class="text-xs md:text-sm font-bold">${formatMoneyShort(Math.abs(dData.total))}</span><span class="text-[8px] opacity-75 mb-1">${dData.count > 1 ? 'x'+dData.count : ''}</span>`;
                     cell.onclick = () => openDetails(dateStr);
                 } else {
                     cell.classList.add('day-neutral');
                     cell.innerHTML = `<span class="text-[10px] text-slate-400 ml-1 mt-1">${day}</span>`;
                     cell.onclick = () => {
                         document.getElementById('inputDate').value = dateStr;
-                        // Sync to Desktop input if needed
-                        const desktopDate = document.querySelector('#desktopEntryForm #inputDate');
-                        if(desktopDate) desktopDate.value = dateStr;
-                        
-                        if(window.innerWidth < 768) openEntryModal();
-                        else document.querySelector('#desktopEntryForm #inputAmount').focus();
+                        if(document.querySelector('#desktopEntryForm #inputDate')) document.querySelector('#desktopEntryForm #inputDate').value = dateStr;
+                        if(window.innerWidth < 768) openEntryModal(); else document.querySelector('#desktopEntryForm #inputAmount').focus();
                     }
                 }
                 grid.appendChild(cell);
             }
         }
 
-        function formatMoneyShort(val) {
-            if(val >= 1000000) return (val/1000000).toFixed(1) + 'm';
-            if(val >= 1000) return (val/1000).toFixed(1) + 'k';
-            return val; // Show full if small
+        function getBadgeColor(strat) {
+            if(!strat) return 'badge-default';
+            if(strat === 'SR Flip') return 'badge-sr';
+            if(strat === 'MA') return 'badge-ma';
+            if(strat === 'KC') return 'badge-kc';
+            if(strat === 'Break Out') return 'badge-bo';
+            if(strat === 'News') return 'badge-news';
+            return 'badge-default';
         }
 
         async function openDetails(dateStr) {
             currentDetailDateStr = dateStr;
             const entries = await DataStore.getByDate(dateStr);
-            
             document.getElementById('detailDateTitle').innerText = new Date(dateStr).toDateString();
             const list = document.getElementById('detailsList');
             
-            if(entries.length === 0) {
-                list.innerHTML = '<p class="text-center text-slate-400 text-sm mt-10">No entries for this day.</p>';
-            } else {
+            if(entries.length === 0) list.innerHTML = '<p class="text-center text-slate-400 text-sm mt-10">No entries.</p>';
+            else {
                 list.innerHTML = entries.map(e => `
-                    <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100">
-                        <div>
-                            <div class="font-bold text-sm text-slate-700">${e.notes || '-'}</div>
-                            <div class="text-xs text-slate-400">$${e.amount}</div>
-                        </div>
-                        <div class="flex items-center gap-3">
+                    <div class="flex flex-col p-3 bg-slate-50 rounded-xl border border-slate-100 gap-2">
+                        <div class="flex justify-between items-start">
+                            <div class="flex gap-2 items-center">
+                                ${e.strategy ? `<span class="badge ${getBadgeColor(e.strategy)}">${e.strategy}</span>` : ''}
+                                <span class="font-bold text-sm text-slate-700">${e.notes || ''}</span>
+                            </div>
                             <span class="font-bold text-sm ${e.amount>=0?'text-emerald-600':'text-rose-500'}">${e.amount}</span>
-                            <button onclick="deleteEntry(${e.id})" class="w-7 h-7 flex items-center justify-center rounded-full bg-white border border-slate-200 text-slate-300 hover:text-rose-500"><i class="fa-solid fa-trash text-xs"></i></button>
+                        </div>
+                        <div class="flex justify-end">
+                            <button onclick="deleteEntry(${e.id})" class="text-xs text-slate-400 hover:text-rose-500 flex items-center gap-1"><i class="fa-solid fa-trash"></i> Delete</button>
                         </div>
                     </div>
                 `).join('');
@@ -399,25 +373,30 @@
         async function handleFormSubmit(e) {
             e.preventDefault();
             const form = e.target;
-            // Smart select values based on which form triggered
             const date = form.querySelector('input[type="date"]')?.value || document.getElementById('inputDate').value;
             const amount = parseFloat(form.querySelector('input[type="number"]')?.value);
             const notes = form.querySelector('input[type="text"]')?.value;
+            
+            // Handle Radio Button Selection
+            let strategy = null;
+            const radios = form.querySelectorAll('input[name="strategy"]');
+            radios.forEach(r => { if(r.checked) strategy = r.value; });
 
             if(!date || isNaN(amount)) return;
 
-            // Button feedback
             const btn = form.querySelector('button[type="submit"]');
             const oldHtml = btn.innerHTML;
             btn.innerHTML = '<i class="fa-solid fa-check"></i> Saved';
             btn.classList.add('bg-emerald-500');
 
-            await DataStore.add({ id: Date.now(), date, amount, notes });
+            await DataStore.add({ id: Date.now(), date, amount, notes, strategy });
             
             setTimeout(() => { btn.innerHTML = oldHtml; btn.classList.remove('bg-emerald-500'); }, 1000);
-            
             form.reset();
-            document.getElementById('inputDate').value = date; // restore date
+            // Reset Radios specifically
+            radios.forEach(r => r.checked = false);
+            
+            document.getElementById('inputDate').value = date;
             if(form.querySelector('input[type="date"]')) form.querySelector('input[type="date"]').value = date;
 
             closeEntryModal();
@@ -427,61 +406,18 @@
         
         document.getElementById('entryForm').addEventListener('submit', handleFormSubmit);
 
-        async function deleteEntry(id) {
-            if(confirm('Delete this entry?')) {
-                await DataStore.delete(id);
-                openDetails(currentDetailDateStr);
-                renderCalendar();
-            }
-        }
-
-        // --- HELPERS ---
+        // Actions
+        async function deleteEntry(id) { if(confirm('Delete?')) { await DataStore.delete(id); openDetails(currentDetailDateStr); renderCalendar(); } }
         function changeMonth(off) { currentDate.setMonth(currentDate.getMonth()+off); renderCalendar(); }
-        function openEntryModal() { 
-            document.getElementById('entryModal').classList.remove('hidden'); 
-            document.querySelector('#entryForm #inputDate').value = document.getElementById('inputDate').value;
-        }
+        function openEntryModal() { document.getElementById('entryModal').classList.remove('hidden'); document.querySelector('#entryForm #inputDate').value = document.getElementById('inputDate').value; }
         function closeEntryModal() { document.getElementById('entryModal').classList.add('hidden'); }
         function closeDetailsModal() { document.getElementById('detailsModal').classList.add('hidden'); currentDetailDateStr = null; }
-        
-        function openEntryFromDetails() {
-            document.getElementById('inputDate').value = currentDetailDateStr;
-            closeDetailsModal();
-            if(window.innerWidth < 768) openEntryModal();
-            else {
-                document.querySelector('#desktopEntryForm #inputDate').value = currentDetailDateStr;
-                document.querySelector('#desktopEntryForm #inputAmount').focus();
-            }
-        }
-
+        function openEntryFromDetails() { document.getElementById('inputDate').value = currentDetailDateStr; closeDetailsModal(); if(window.innerWidth < 768) openEntryModal(); else { document.querySelector('#desktopEntryForm #inputDate').value = currentDetailDateStr; document.querySelector('#desktopEntryForm #inputAmount').focus(); } }
         function openSettings() { document.getElementById('settingsModal').classList.remove('hidden'); }
+        async function saveSettings() { const g = document.getElementById('settingGistId').value.trim(); const t = document.getElementById('settingToken').value.trim(); localStorage.setItem('tj_config_v7', JSON.stringify({ gistId:g, token:t })); DataStore.config={gistId:g,token:t}; await DataStore.load(); document.getElementById('settingsModal').classList.add('hidden'); renderCalendar(); alert('Saved!'); }
+        function exportData() { DataStore.load().then(d => { const csv = "data:text/csv;charset=utf-8,Date,Amount,Method,Notes\n" + d.map(x => `${x.date},${x.amount},${x.strategy||''},"${x.notes||''}"`).join("\n"); const l = document.createElement("a"); l.href = encodeURI(csv); l.download = "backup.csv"; document.body.appendChild(l); l.click(); }); }
+        function formatMoneyShort(val) { if(val >= 1000000) return (val/1000000).toFixed(1) + 'm'; if(val >= 1000) return (val/1000).toFixed(1) + 'k'; return val; }
         
-        async function saveSettings() {
-            const gistId = document.getElementById('settingGistId').value.trim();
-            const token = document.getElementById('settingToken').value.trim();
-            
-            localStorage.setItem('tj_config_v6', JSON.stringify({ gistId, token }));
-            DataStore.config = { gistId, token };
-            
-            const btn = document.querySelector('#settingsModal button');
-            btn.innerText = "Syncing...";
-            
-            await DataStore.load();
-            btn.innerText = "Save & Sync";
-            
-            document.getElementById('settingsModal').classList.add('hidden');
-            renderCalendar();
-            alert('Settings Saved!');
-        }
-        
-        function exportData() {
-            DataStore.load().then(data => {
-                const csv = "data:text/csv;charset=utf-8,Date,Amount,Notes\n" + data.map(d => `${d.date},${d.amount},"${d.notes||''}"`).join("\n");
-                const link = document.createElement("a"); link.href = encodeURI(csv); link.download = "trade_backup.csv";
-                document.body.appendChild(link); link.click();
-            });
-        }
-
         init();
     </script>
 </body>
