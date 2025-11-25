@@ -1,16 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="light"> <!-- Default to light, JS will toggle -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeJournal v8</title>
+    <title>TradeJournal v8.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: { 900: '#0f172a', 800: '#1e293b', 700: '#334155' } // Deep blue-black theme
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; height: 100dvh; overflow: hidden; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; height: 100dvh; overflow: hidden; transition: background-color 0.3s, color 0.3s; }
+        
+        /* Scrollbar */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
         /* Calendar Grid */
@@ -19,33 +34,39 @@
         .calendar-day { aspect-ratio: 1; transition: transform 0.1s; }
         .calendar-day:active { transform: scale(0.95); }
         
-        .day-profit { background: #10b981; color: white; }
-        .day-loss { background: #f43f5e; color: white; }
-        .day-neutral { background-color: white; border: 1px solid #e2e8f0; color: #64748b; }
+        /* Dynamic Colors (Light/Dark) */
+        .day-profit { background: #10b981; color: white; border: 1px solid #059669; }
+        .day-loss { background: #f43f5e; color: white; border: 1px solid #e11d48; }
         
+        .light .day-neutral { background: white; border: 1px solid #e2e8f0; color: #64748b; }
+        .dark .day-neutral { background: #1e293b; border: 1px solid #334155; color: #94a3b8; }
+
+        .light .bg-base { background: #f8fafc; }
+        .dark .bg-base { background: #0f172a; }
+        
+        .light .bg-surface { background: white; }
+        .dark .bg-surface { background: #1e293b; border-color: #334155; }
+
+        .light .text-main { color: #1e293b; }
+        .dark .text-main { color: #f1f5f9; }
+        
+        .light .text-muted { color: #64748b; }
+        .dark .text-muted { color: #94a3b8; }
+
         /* Tab Animation */
         .tab-content { display: none; height: 100%; }
         .tab-content.active { display: flex; animation: fadeIn 0.3s ease-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .nav-btn.active { border-bottom: 2px solid #2563eb; color: #2563eb; font-weight: 700; }
-        
-        /* Dashboard Cards (Dark Theme inspiration) */
-        .dash-card { background: #1e293b; color: white; border-radius: 12px; padding: 16px; }
-        .dash-value-green { color: #4ade80; }
-        .dash-value-red { color: #f87171; }
-        
+        .light .nav-btn.active { border-bottom: 2px solid #2563eb; color: #2563eb; font-weight: 700; }
+        .dark .nav-btn.active { border-bottom: 2px solid #60a5fa; color: #60a5fa; font-weight: 700; }
+
         /* Strategy Chips */
         .strategy-radio:checked + label { background-color: #eff6ff; color: #2563eb; border-color: #2563eb; font-weight: 700; }
-        .badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 600; text-transform: uppercase; }
-        .badge-ma { background: #e0e7ff; color: #4338ca; }
-        .badge-sr { background: #ffedd5; color: #c2410c; }
-        .badge-kc { background: #fae8ff; color: #a21caf; }
-        .badge-bo { background: #dcfce7; color: #15803d; }
-        .badge-news { background: #fee2e2; color: #b91c1c; }
+        .dark .strategy-radio:checked + label { background-color: #1e3a8a; color: #93c5fd; border-color: #3b82f6; }
         
         /* Modal */
-        .modal-bg { background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); }
+        .modal-bg { background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); }
         .slide-up { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         
@@ -53,127 +74,102 @@
         .fab { position: absolute; bottom: 24px; right: 24px; width: 56px; height: 56px; border-radius: 50%; background: #2563eb; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4); z-index: 50; }
     </style>
 </head>
-<body class="flex flex-col md:flex-row text-slate-800">
+<body class="flex flex-col md:flex-row bg-base text-main">
 
     <!-- SIDEBAR (Desktop) -->
-    <aside class="hidden md:flex w-72 bg-white border-r border-slate-200 flex-col z-20 shadow-sm">
-        <div class="p-6 border-b border-slate-100">
-            <h1 class="text-xl font-bold flex items-center gap-2 text-slate-800"><i class="fa-solid fa-layer-group text-blue-600"></i> TradeJournal</h1>
+    <aside class="hidden md:flex w-72 bg-surface border-r border-slate-200 dark:border-slate-700 flex-col z-20 shadow-sm transition-colors">
+        <div class="p-6 border-b border-slate-100 dark:border-slate-700">
+            <h1 class="text-xl font-bold flex items-center gap-2 text-main"><i class="fa-solid fa-layer-group text-blue-600"></i> TradeJournal</h1>
         </div>
         <nav class="flex flex-col p-4 gap-2">
-            <button onclick="switchTab('calendar')" id="desk-tab-calendar" class="text-left px-4 py-3 rounded-lg bg-blue-50 text-blue-600 font-bold transition-all hover:bg-blue-50"><i class="fa-regular fa-calendar mr-2"></i> Calendar</button>
-            <button onclick="switchTab('analytics')" id="desk-tab-analytics" class="text-left px-4 py-3 rounded-lg text-slate-600 font-medium hover:bg-slate-50 transition-all"><i class="fa-solid fa-chart-line mr-2"></i> Analytics</button>
+            <button onclick="switchTab('calendar')" id="desk-tab-calendar" class="text-left px-4 py-3 rounded-lg bg-blue-50 text-blue-600 font-bold transition-all hover:bg-blue-50 dark:hover:bg-slate-700"><i class="fa-regular fa-calendar mr-2"></i> Calendar</button>
+            <button onclick="switchTab('analytics')" id="desk-tab-analytics" class="text-left px-4 py-3 rounded-lg text-muted font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"><i class="fa-solid fa-chart-line mr-2"></i> Analytics</button>
         </nav>
-        <div class="mt-auto p-4 border-t border-slate-100">
-            <button onclick="openSettings()" class="flex items-center gap-2 text-sm text-slate-500 hover:text-blue-600 w-full"><i class="fa-solid fa-gear"></i> Sync Settings</button>
+        <div class="mt-auto p-4 border-t border-slate-100 dark:border-slate-700 flex gap-2">
+            <button onclick="openLogin()" class="flex-1 flex items-center justify-center gap-2 text-sm bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-semibold"><i class="fa-brands fa-github"></i> Login</button>
+            <button onclick="openSettings()" class="w-10 flex items-center justify-center text-muted hover:text-blue-600 dark:hover:text-blue-400 bg-slate-100 dark:bg-slate-800 rounded-lg"><i class="fa-solid fa-gear"></i></button>
         </div>
     </aside>
 
     <!-- MAIN CONTENT -->
-    <div class="flex-1 flex flex-col h-full relative bg-slate-50/50">
+    <div class="flex-1 flex flex-col h-full relative bg-base transition-colors">
         
-        <!-- MOBILE NAVIGATION BAR -->
-        <div class="md:hidden bg-white border-b border-slate-200 px-4 flex justify-between items-center shrink-0 z-30 h-14">
+        <!-- MOBILE NAV -->
+        <div class="md:hidden bg-surface border-b border-slate-200 dark:border-slate-700 px-4 flex justify-between items-center shrink-0 z-30 h-14">
             <div class="flex h-full">
-                <button onclick="switchTab('calendar')" id="mob-tab-calendar" class="nav-btn active px-4 h-full flex items-center text-sm text-slate-500">Calendar</button>
-                <button onclick="switchTab('analytics')" id="mob-tab-analytics" class="nav-btn px-4 h-full flex items-center text-sm text-slate-500">Analytics</button>
+                <button onclick="switchTab('calendar')" id="mob-tab-calendar" class="nav-btn active px-4 h-full flex items-center text-sm text-muted">Calendar</button>
+                <button onclick="switchTab('analytics')" id="mob-tab-analytics" class="nav-btn px-4 h-full flex items-center text-sm text-muted">Analytics</button>
             </div>
-            <button onclick="openSettings()" class="w-8 h-8 text-slate-400"><i class="fa-solid fa-gear"></i></button>
+            <div class="flex gap-3">
+                <button onclick="openLogin()" class="text-blue-600 dark:text-blue-400 font-bold text-sm">Login</button>
+                <button onclick="openSettings()" class="text-muted"><i class="fa-solid fa-gear"></i></button>
+            </div>
         </div>
 
         <!-- TAB 1: CALENDAR -->
         <div id="tab-calendar" class="tab-content active flex-col">
-            <!-- Header -->
-            <header class="bg-white md:bg-transparent border-b md:border-none px-4 py-3 md:px-8 md:py-6 flex justify-between items-center shrink-0">
-                <div class="flex items-center gap-3 bg-slate-100 md:bg-white p-1 rounded-lg">
-                    <button onclick="changeMonth(-1)" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-white text-slate-600"><i class="fa-solid fa-chevron-left text-xs"></i></button>
-                    <span id="currentMonthDisplay" class="font-bold text-sm min-w-[90px] text-center text-slate-700">--</span>
-                    <button onclick="changeMonth(1)" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-white text-slate-600"><i class="fa-solid fa-chevron-right text-xs"></i></button>
+            <header class="bg-surface md:bg-transparent border-b md:border-none border-slate-200 dark:border-slate-700 px-4 py-3 md:px-8 md:py-6 flex justify-between items-center shrink-0 transition-colors">
+                <div class="flex items-center gap-3 bg-slate-100 dark:bg-slate-800 md:bg-surface p-1 rounded-lg transition-colors">
+                    <button onclick="changeMonth(-1)" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-white dark:hover:bg-slate-700 text-muted"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+                    <span id="currentMonthDisplay" class="font-bold text-sm min-w-[90px] text-center text-main">--</span>
+                    <button onclick="changeMonth(1)" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-white dark:hover:bg-slate-700 text-muted"><i class="fa-solid fa-chevron-right text-xs"></i></button>
                 </div>
                 <div class="text-right">
-                    <p class="text-[10px] text-slate-400 font-bold uppercase">Net P&L</p>
-                    <p id="monthTotalDisplay" class="text-lg md:text-2xl font-bold">--</p>
+                    <p class="text-[10px] text-muted font-bold uppercase">Net P&L</p>
+                    <p id="monthTotalDisplay" class="text-lg md:text-2xl font-bold text-main">--</p>
                 </div>
             </header>
             
-            <!-- Grid -->
             <div class="flex-1 overflow-y-auto p-2 md:p-8 no-scrollbar relative">
                 <div class="max-w-5xl mx-auto pb-24 md:pb-0">
                     <div class="grid grid-cols-7 mb-2 px-1">
-                        <div class="text-center text-[10px] font-bold text-slate-400">S</div><div class="text-center text-[10px] font-bold text-slate-400">M</div><div class="text-center text-[10px] font-bold text-slate-400">T</div><div class="text-center text-[10px] font-bold text-slate-400">W</div><div class="text-center text-[10px] font-bold text-slate-400">T</div><div class="text-center text-[10px] font-bold text-slate-400">F</div><div class="text-center text-[10px] font-bold text-slate-400">S</div>
+                        <div class="text-center text-[10px] font-bold text-muted">S</div><div class="text-center text-[10px] font-bold text-muted">M</div><div class="text-center text-[10px] font-bold text-muted">T</div><div class="text-center text-[10px] font-bold text-muted">W</div><div class="text-center text-[10px] font-bold text-muted">T</div><div class="text-center text-[10px] font-bold text-muted">F</div><div class="text-center text-[10px] font-bold text-muted">S</div>
                     </div>
                     <div id="calendarGrid" class="calendar-grid"></div>
                 </div>
             </div>
             <button onclick="openEntryModal()" class="fab md:hidden"><i class="fa-solid fa-plus text-xl"></i></button>
-            <!-- Desktop Floating Button for Entry -->
             <button onclick="openEntryModal()" class="hidden md:flex absolute bottom-8 right-8 bg-blue-600 text-white px-6 py-3 rounded-full font-bold shadow-lg items-center gap-2 hover:bg-blue-700 transition-all"><i class="fa-solid fa-plus"></i> Add Trade</button>
         </div>
 
         <!-- TAB 2: ANALYTICS -->
-        <div id="tab-analytics" class="tab-content flex-col overflow-y-auto bg-slate-100">
+        <div id="tab-analytics" class="tab-content flex-col overflow-y-auto bg-slate-100 dark:bg-black/20">
             <div class="p-4 md:p-8 max-w-7xl mx-auto w-full space-y-6">
-                
-                <!-- KPI Cards Row -->
+                <!-- KPI Cards -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <!-- Total PnL -->
-                    <div class="dash-card">
-                        <div class="text-xs text-slate-400 mb-1">Total PnL</div>
+                    <div class="bg-surface p-4 rounded-xl border dark:border-slate-700 shadow-sm">
+                        <div class="text-xs text-muted mb-1">Total PnL</div>
                         <div id="kpiTotalPnl" class="text-2xl font-bold">--</div>
-                        <div class="mt-2 flex justify-between text-[10px]">
-                            <span class="text-slate-400">Wins: <span id="kpiTotalWinVal" class="text-green-400">--</span></span>
-                            <span class="text-slate-400">Loss: <span id="kpiTotalLossVal" class="text-red-400">--</span></span>
-                        </div>
+                        <div class="mt-2 flex justify-between text-[10px]"><span class="text-muted">Wins: <span id="kpiTotalWinVal" class="text-green-500">--</span></span><span class="text-muted">Loss: <span id="kpiTotalLossVal" class="text-red-500">--</span></span></div>
                     </div>
-                    <!-- Win Rate -->
-                    <div class="dash-card">
-                        <div class="text-xs text-slate-400 mb-1">Profit Ratio</div>
-                        <div id="kpiWinRate" class="text-2xl font-bold">--%</div>
-                        <div class="w-full bg-slate-700 h-1.5 rounded-full mt-3 overflow-hidden">
-                            <div id="kpiWinBar" class="bg-green-500 h-full" style="width: 0%"></div>
-                        </div>
+                    <div class="bg-surface p-4 rounded-xl border dark:border-slate-700 shadow-sm">
+                        <div class="text-xs text-muted mb-1">Profit Ratio</div>
+                        <div id="kpiWinRate" class="text-2xl font-bold text-main">--%</div>
+                        <div class="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full mt-3 overflow-hidden"><div id="kpiWinBar" class="bg-green-500 h-full" style="width: 0%"></div></div>
                     </div>
-                    <!-- Avg Win -->
-                    <div class="dash-card">
-                        <div class="text-xs text-slate-400 mb-1">Avg Win Trade</div>
-                        <div id="kpiAvgWin" class="text-2xl font-bold dash-value-green">--</div>
-                        <div class="text-[10px] text-slate-500 mt-1"><i class="fa-solid fa-arrow-up"></i> Average Gain</div>
+                    <div class="bg-surface p-4 rounded-xl border dark:border-slate-700 shadow-sm">
+                        <div class="text-xs text-muted mb-1">Avg Win</div>
+                        <div id="kpiAvgWin" class="text-2xl font-bold text-green-500">--</div>
                     </div>
-                    <!-- Avg Loss -->
-                    <div class="dash-card">
-                        <div class="text-xs text-slate-400 mb-1">Avg Loss Trade</div>
-                        <div id="kpiAvgLoss" class="text-2xl font-bold dash-value-red">--</div>
-                        <div class="text-[10px] text-slate-500 mt-1"><i class="fa-solid fa-arrow-down"></i> Average Drop</div>
+                    <div class="bg-surface p-4 rounded-xl border dark:border-slate-700 shadow-sm">
+                        <div class="text-xs text-muted mb-1">Avg Loss</div>
+                        <div id="kpiAvgLoss" class="text-2xl font-bold text-red-500">--</div>
                     </div>
                 </div>
 
-                <!-- Chart Section -->
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-                    <h3 class="text-sm font-bold text-slate-700 mb-4">P&L History (Equity Curve)</h3>
-                    <div class="h-64 w-full">
-                        <canvas id="equityChart"></canvas>
-                    </div>
+                <!-- Chart -->
+                <div class="bg-surface p-4 rounded-xl shadow-sm border dark:border-slate-700">
+                    <h3 class="text-sm font-bold text-main mb-4">Equity Curve</h3>
+                    <div class="h-64 w-full"><canvas id="equityChart"></canvas></div>
                 </div>
 
-                <!-- Trade History Table -->
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="px-4 py-3 border-b border-slate-100 bg-slate-50">
-                        <h3 class="text-sm font-bold text-slate-700">Recent History</h3>
-                    </div>
+                <!-- History Table -->
+                <div class="bg-surface rounded-xl shadow-sm border dark:border-slate-700 overflow-hidden">
+                    <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50"><h3 class="text-sm font-bold text-main">Trade History</h3></div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left">
-                            <thead class="text-xs text-slate-400 uppercase bg-slate-50 border-b border-slate-100">
-                                <tr>
-                                    <th class="px-4 py-3 font-medium">Date</th>
-                                    <th class="px-4 py-3 font-medium">Method</th>
-                                    <th class="px-4 py-3 font-medium text-right">Profit</th>
-                                    <th class="px-4 py-3 font-medium">Notes</th>
-                                    <th class="px-4 py-3 font-medium text-right">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="historyTableBody" class="divide-y divide-slate-100">
-                                <!-- Populated via JS -->
-                            </tbody>
+                        <table class="w-full text-sm text-left text-main">
+                            <thead class="text-xs text-muted uppercase bg-slate-50 dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700"><tr><th class="px-4 py-3">Date</th><th class="px-4 py-3">Method</th><th class="px-4 py-3 text-right">Profit</th><th class="px-4 py-3">Notes</th><th class="px-4 py-3 text-right">Action</th></tr></thead>
+                            <tbody id="historyTableBody" class="divide-y divide-slate-100 dark:divide-slate-700"></tbody>
                         </table>
                     </div>
                 </div>
@@ -181,69 +177,102 @@
         </div>
     </div>
 
+    <!-- LOGIN MODAL (Separate from Settings) -->
+    <div id="loginModal" class="fixed inset-0 modal-bg hidden z-50 flex items-center justify-center px-4">
+        <div class="bg-surface w-full max-w-sm rounded-2xl p-6 shadow-xl slide-up border dark:border-slate-700">
+            <h3 class="font-bold text-lg mb-4 text-main"><i class="fa-brands fa-github text-xl mr-2"></i>Connect Gist</h3>
+            <p class="text-xs text-muted mb-4">Enter your GitHub Gist credentials to sync data.</p>
+            <div class="space-y-3 mb-4">
+                <input type="text" id="loginGistId" placeholder="Gist ID" class="w-full p-2 border border-slate-200 dark:border-slate-600 bg-transparent rounded-lg text-sm text-main">
+                <input type="password" id="loginToken" placeholder="Token (ghp_...)" class="w-full p-2 border border-slate-200 dark:border-slate-600 bg-transparent rounded-lg text-sm text-main">
+            </div>
+            <button onclick="performLogin()" class="w-full bg-blue-600 text-white py-2 rounded-lg font-bold text-sm mb-2">Connect</button>
+            <button onclick="document.getElementById('loginModal').classList.add('hidden')" class="w-full bg-slate-100 dark:bg-slate-700 text-muted py-2 rounded-lg font-bold text-sm">Cancel</button>
+        </div>
+    </div>
+
+    <!-- SETTINGS MODAL (Appearance & Reset) -->
+    <div id="settingsModal" class="fixed inset-0 modal-bg hidden z-50 flex items-center justify-center px-4">
+        <div class="bg-surface w-full max-w-sm rounded-2xl p-6 shadow-xl slide-up border dark:border-slate-700">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-bold text-lg text-main">Settings</h3>
+                <button onclick="document.getElementById('settingsModal').classList.add('hidden')" class="text-muted"><i class="fa-solid fa-times"></i></button>
+            </div>
+
+            <!-- Appearance -->
+            <div class="mb-6">
+                <label class="text-xs font-bold text-muted uppercase block mb-2">Appearance</label>
+                <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+                    <button onclick="setTheme('light')" class="flex-1 py-1 text-sm rounded-md transition-colors text-muted hover:bg-white dark:hover:bg-slate-600" id="btn-theme-light"><i class="fa-solid fa-sun mr-1"></i> Light</button>
+                    <button onclick="setTheme('dark')" class="flex-1 py-1 text-sm rounded-md transition-colors text-muted hover:bg-white dark:hover:bg-slate-600" id="btn-theme-dark"><i class="fa-solid fa-moon mr-1"></i> Dark</button>
+                </div>
+            </div>
+
+            <!-- Data Management -->
+            <div>
+                <label class="text-xs font-bold text-red-400 uppercase block mb-2">Danger Zone (Erase Data)</label>
+                <div class="space-y-2">
+                    <button onclick="resetData('week')" class="w-full py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-main hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500 text-left px-4">🗑️ Last 7 Days</button>
+                    <button onclick="resetData('month')" class="w-full py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-main hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500 text-left px-4">🗑️ Last Month</button>
+                    <button onclick="resetData('all')" class="w-full py-2 bg-red-50 dark:bg-red-900/20 text-red-500 border border-red-100 dark:border-red-900 rounded-lg text-sm font-bold hover:bg-red-100 text-left px-4">⚠️ Erase All History</button>
+                </div>
+            </div>
+            
+            <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-700 text-center">
+                <button onclick="exportData()" class="text-xs text-blue-500 hover:underline">Download CSV Backup</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ENTRY MODAL -->
     <div id="entryModal" class="fixed inset-0 modal-bg hidden z-50 flex items-end md:items-center justify-center">
-        <div class="bg-white w-full md:w-96 rounded-t-2xl md:rounded-2xl shadow-2xl slide-up max-h-[90dvh] flex flex-col">
-            <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <h3 class="font-bold text-slate-700">New Entry</h3>
-                <button onclick="closeEntryModal()" class="w-8 h-8 rounded-full bg-slate-200 text-slate-500"><i class="fa-solid fa-times"></i></button>
+        <div class="bg-surface w-full md:w-96 rounded-t-2xl md:rounded-2xl shadow-2xl slide-up border dark:border-slate-700 max-h-[90dvh] flex flex-col">
+            <div class="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+                <h3 class="font-bold text-main">New Entry</h3>
+                <button onclick="closeEntryModal()" class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 text-muted"><i class="fa-solid fa-times"></i></button>
             </div>
             <div class="p-6 overflow-y-auto">
                 <form id="entryForm" class="space-y-5">
-                    <div><label class="text-[10px] font-bold text-slate-400 uppercase">Date</label><input type="date" id="inputDate" class="w-full mt-1 p-3 bg-slate-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500"></div>
-                    <div><label class="text-[10px] font-bold text-slate-400 uppercase">P&L Amount</label><input type="number" id="inputAmount" step="0.01" placeholder="0.00" class="w-full mt-1 p-3 bg-slate-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 text-2xl font-bold"></div>
+                    <div><label class="text-[10px] font-bold text-muted uppercase">Date</label><input type="date" id="inputDate" class="w-full mt-1 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border-none outline-none text-main focus:ring-2 focus:ring-blue-500"></div>
+                    <div><label class="text-[10px] font-bold text-muted uppercase">P&L Amount</label><input type="number" id="inputAmount" step="0.01" placeholder="0.00" class="w-full mt-1 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border-none outline-none text-main text-2xl font-bold focus:ring-2 focus:ring-blue-500"></div>
                     <div>
-                        <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block">Method</label>
+                        <label class="text-[10px] font-bold text-muted uppercase mb-2 block">Method</label>
                         <div class="flex flex-wrap gap-2">
-                            <div class="flex-1 min-w-[70px]"><input type="radio" name="strategy" id="s_sr" value="SR Flip" class="strategy-radio hidden"><label for="s_sr" class="block text-center text-xs py-2 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer">SR Flip</label></div>
-                            <div class="flex-1 min-w-[50px]"><input type="radio" name="strategy" id="s_ma" value="MA" class="strategy-radio hidden"><label for="s_ma" class="block text-center text-xs py-2 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer">MA</label></div>
-                            <div class="flex-1 min-w-[50px]"><input type="radio" name="strategy" id="s_kc" value="KC" class="strategy-radio hidden"><label for="s_kc" class="block text-center text-xs py-2 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer">KC</label></div>
-                            <div class="flex-1 min-w-[70px]"><input type="radio" name="strategy" id="s_bo" value="Break Out" class="strategy-radio hidden"><label for="s_bo" class="block text-center text-xs py-2 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer">Break Out</label></div>
-                            <div class="flex-1 min-w-[50px]"><input type="radio" name="strategy" id="s_nw" value="News" class="strategy-radio hidden"><label for="s_nw" class="block text-center text-xs py-2 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer">News</label></div>
+                            <div class="flex-1 min-w-[60px]"><input type="radio" name="strategy" id="s_sr" value="SR Flip" class="strategy-radio hidden"><label for="s_sr" class="block text-center text-xs py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg cursor-pointer text-muted">SR Flip</label></div>
+                            <div class="flex-1 min-w-[40px]"><input type="radio" name="strategy" id="s_ma" value="MA" class="strategy-radio hidden"><label for="s_ma" class="block text-center text-xs py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg cursor-pointer text-muted">MA</label></div>
+                            <div class="flex-1 min-w-[40px]"><input type="radio" name="strategy" id="s_kc" value="KC" class="strategy-radio hidden"><label for="s_kc" class="block text-center text-xs py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg cursor-pointer text-muted">KC</label></div>
+                            <div class="flex-1 min-w-[60px]"><input type="radio" name="strategy" id="s_bo" value="Break Out" class="strategy-radio hidden"><label for="s_bo" class="block text-center text-xs py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg cursor-pointer text-muted">BreakOut</label></div>
+                            <div class="flex-1 min-w-[40px]"><input type="radio" name="strategy" id="s_nw" value="News" class="strategy-radio hidden"><label for="s_nw" class="block text-center text-xs py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg cursor-pointer text-muted">News</label></div>
                         </div>
                     </div>
-                    <div><label class="text-[10px] font-bold text-slate-400 uppercase">Notes</label><input type="text" id="inputNotes" placeholder="..." class="w-full mt-1 p-3 bg-slate-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500"></div>
-                    <button type="submit" class="w-full py-4 bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-200">Save Entry</button>
+                    <div><label class="text-[10px] font-bold text-muted uppercase">Notes</label><input type="text" id="inputNotes" placeholder="..." class="w-full mt-1 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border-none outline-none text-main focus:ring-2 focus:ring-blue-500"></div>
+                    <button type="submit" class="w-full py-4 bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-200 dark:shadow-blue-900">Save Entry</button>
                 </form>
             </div>
         </div>
     </div>
-    
+
     <!-- DETAILS MODAL -->
     <div id="detailsModal" class="fixed inset-0 modal-bg hidden z-50 flex items-end md:items-center justify-center">
-        <div class="bg-white w-full md:w-[480px] h-[70dvh] md:h-[600px] rounded-t-2xl md:rounded-2xl shadow-2xl slide-up flex flex-col">
-            <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 md:rounded-t-2xl">
-                <div><h3 id="detailDateTitle" class="font-bold text-slate-800 text-lg">--</h3><p class="text-xs text-slate-500">Daily Breakdown</p></div>
-                <button onclick="closeDetailsModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-slate-200 text-slate-400"><i class="fa-solid fa-times"></i></button>
+        <div class="bg-surface w-full md:w-[480px] h-[70dvh] md:h-[600px] rounded-t-2xl md:rounded-2xl shadow-2xl slide-up border dark:border-slate-700 flex flex-col">
+            <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 md:rounded-t-2xl">
+                <div><h3 id="detailDateTitle" class="font-bold text-main text-lg">--</h3><p class="text-xs text-muted">Daily Breakdown</p></div>
+                <button onclick="closeDetailsModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-surface border border-slate-200 dark:border-slate-600 text-muted"><i class="fa-solid fa-times"></i></button>
             </div>
             <div id="detailsList" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
-            <div class="p-4 border-t border-slate-100 bg-white md:rounded-b-2xl"><button onclick="openEntryFromDetails()" class="w-full py-3 bg-slate-100 text-blue-600 font-bold rounded-xl">+ Add to this Day</button></div>
-        </div>
-    </div>
-
-    <!-- SETTINGS MODAL -->
-    <div id="settingsModal" class="fixed inset-0 modal-bg hidden z-50 flex items-center justify-center px-4">
-        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-xl slide-up">
-            <h3 class="font-bold text-lg mb-4"><i class="fa-brands fa-github text-xl mr-2"></i>GitHub Sync</h3>
-            <div class="space-y-3 mb-4">
-                <input type="text" id="settingGistId" placeholder="Gist ID" class="w-full p-2 border border-slate-200 rounded-lg text-sm">
-                <input type="password" id="settingToken" placeholder="Token (ghp_...)" class="w-full p-2 border border-slate-200 rounded-lg text-sm">
-            </div>
-            <button onclick="saveSettings()" class="w-full bg-blue-600 text-white py-2 rounded-lg font-bold text-sm mb-2">Save</button>
-            <button onclick="document.getElementById('settingsModal').classList.add('hidden')" class="w-full bg-slate-100 text-slate-600 py-2 rounded-lg font-bold text-sm">Cancel</button>
+            <div class="p-4 border-t border-slate-100 dark:border-slate-700 bg-surface md:rounded-b-2xl"><button onclick="openEntryFromDetails()" class="w-full py-3 bg-slate-100 dark:bg-slate-700 text-blue-600 dark:text-blue-400 font-bold rounded-xl">+ Add to this Day</button></div>
         </div>
     </div>
 
     <script>
-        // --- APP STATE ---
+        // --- STATE & INIT ---
         let currentDate = new Date();
         let currentDetailDateStr = null;
         let chartInstance = null;
         const FILENAME = 'trade_journal.json';
-
-        // --- DATA STORE ---
         const DataStore = {
             config: JSON.parse(localStorage.getItem('tj_config_v8') || '{}'),
+            theme: localStorage.getItem('tj_theme') || 'light',
             load: async () => {
                 if (DataStore.config.gistId && DataStore.config.token) {
                     try {
@@ -256,7 +285,7 @@
                                 return content;
                             }
                         }
-                    } catch(e) { console.error(e); }
+                    } catch(e) {}
                 }
                 return JSON.parse(localStorage.getItem('tj_data_v8') || '[]');
             },
@@ -269,220 +298,212 @@
                     });
                 }
             },
-            add: async (entry) => { const data = await DataStore.load(); data.push(entry); await DataStore.save(data); return data; },
-            delete: async (id) => { let data = await DataStore.load(); data = data.filter(d => d.id !== id); await DataStore.save(data); return data; },
             getAll: async () => await DataStore.load(),
-            getAggregated: async (year, month) => {
-                const data = await DataStore.load();
-                const prefix = `${year}-${String(month+1).padStart(2,'0')}`;
-                const agg = {};
-                data.filter(d => d.date.startsWith(prefix)).forEach(d => {
-                    if(!agg[d.date]) agg[d.date] = { total: 0, count: 0 };
-                    agg[d.date].total += d.amount; agg[d.date].count++;
-                });
-                return agg;
-            },
-            getByDate: async (dateStr) => (await DataStore.load()).filter(d => d.date === dateStr)
         };
 
-        // --- MAIN INIT ---
         async function init() {
             document.getElementById('inputDate').valueAsDate = new Date();
-            const conf = DataStore.config;
-            if(conf.gistId) document.getElementById('settingGistId').value = conf.gistId;
-            if(conf.token) document.getElementById('settingToken').value = conf.token;
+            setTheme(DataStore.theme); // Apply theme
+            
+            // Populate Login Fields
+            if(DataStore.config.gistId) document.getElementById('loginGistId').value = DataStore.config.gistId;
+            if(DataStore.config.token) document.getElementById('loginToken').value = DataStore.config.token;
+            
             await renderCalendar();
         }
 
-        // --- TABS ---
-        async function switchTab(tab) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById(`desk-tab-calendar`).classList.remove('bg-blue-50','text-blue-600','font-bold');
-            document.getElementById(`desk-tab-calendar`).classList.add('text-slate-600');
-            document.getElementById(`desk-tab-analytics`).classList.remove('bg-blue-50','text-blue-600','font-bold');
+        // --- THEME LOGIC ---
+        function setTheme(theme) {
+            DataStore.theme = theme;
+            localStorage.setItem('tj_theme', theme);
+            document.documentElement.classList.remove('light', 'dark');
+            document.documentElement.classList.add(theme);
             
-            document.getElementById(`tab-${tab}`).classList.add('active');
+            // Update Settings Buttons UI
+            const lightBtn = document.getElementById('btn-theme-light');
+            const darkBtn = document.getElementById('btn-theme-dark');
             
-            // Mobile Nav Styling
-            if(document.getElementById(`mob-tab-${tab}`)) document.getElementById(`mob-tab-${tab}`).classList.add('active');
-            
-            // Desktop Nav Styling
-            if(tab === 'calendar') {
-                document.getElementById(`desk-tab-calendar`).classList.add('bg-blue-50','text-blue-600','font-bold');
-                await renderCalendar();
+            if(theme === 'light') {
+                lightBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
+                lightBtn.classList.remove('text-muted');
+                darkBtn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
+                darkBtn.classList.add('text-muted');
             } else {
-                document.getElementById(`desk-tab-analytics`).classList.add('bg-blue-50','text-blue-600','font-bold');
-                await renderAnalytics();
+                darkBtn.classList.add('bg-slate-600', 'shadow-sm', 'text-white', 'font-bold');
+                darkBtn.classList.remove('text-muted');
+                lightBtn.classList.remove('bg-slate-600', 'shadow-sm', 'text-white', 'font-bold');
+                lightBtn.classList.add('text-muted');
             }
+            
+            // Redraw Chart if Analytics is open (to update grid line colors)
+            if(document.getElementById('tab-analytics').classList.contains('active')) renderAnalytics();
         }
 
-        // --- PAGE 1: CALENDAR ---
+        // --- RESET LOGIC ---
+        async function resetData(scope) {
+            if(!confirm("Are you sure? This cannot be undone.")) return;
+            
+            let data = await DataStore.getAll();
+            const now = new Date();
+            
+            if(scope === 'all') {
+                data = [];
+            } else if (scope === 'week') {
+                const cutoff = new Date(); cutoff.setDate(now.getDate() - 7);
+                data = data.filter(d => new Date(d.date) < cutoff);
+            } else if (scope === 'month') {
+                const cutoff = new Date(); cutoff.setMonth(now.getMonth() - 1);
+                data = data.filter(d => new Date(d.date) < cutoff);
+            }
+            
+            await DataStore.save(data);
+            alert('Data erased.');
+            document.getElementById('settingsModal').classList.add('hidden');
+            location.reload();
+        }
+
+        // --- CORE RENDERERS ---
         async function renderCalendar() {
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth();
-            const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
             document.getElementById('currentMonthDisplay').innerText = `${months[month]} ${year}`;
-            const agg = await DataStore.getAggregated(year, month);
             
-            const total = Object.values(agg).reduce((s, d) => s + d.total, 0);
-            const totalEl = document.getElementById('monthTotalDisplay');
-            totalEl.innerText = formatMoney(total);
-            totalEl.className = `text-lg md:text-2xl font-bold ${total>=0?'text-emerald-600':'text-rose-500'}`;
-
-            const grid = document.getElementById('calendarGrid');
-            grid.innerHTML = '';
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const firstDay = new Date(year, month, 1).getDay();
-
-            for(let i=0; i<firstDay; i++) grid.appendChild(document.createElement('div'));
-            for(let day=1; day<=daysInMonth; day++) {
-                const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-                const dData = agg[dateStr];
+            const data = await DataStore.getAll();
+            const prefix = `${year}-${String(month+1).padStart(2,'0')}`;
+            const agg = {};
+            data.filter(d => d.date.startsWith(prefix)).forEach(d => { if(!agg[d.date]) agg[d.date]={total:0,count:0}; agg[d.date].total+=d.amount; agg[d.date].count++; });
+            
+            const total = Object.values(agg).reduce((s,d)=>s+d.total,0);
+            const tEl = document.getElementById('monthTotalDisplay');
+            tEl.innerText = (total>=0?'+':'')+'$'+Math.abs(total).toFixed(2);
+            tEl.className = `text-lg md:text-2xl font-bold ${total>=0?'text-emerald-500':'text-red-500'}`;
+            
+            const grid = document.getElementById('calendarGrid'); grid.innerHTML = '';
+            const days = new Date(year, month+1, 0).getDate();
+            const first = new Date(year, month, 1).getDay();
+            
+            for(let i=0;i<first;i++) grid.appendChild(document.createElement('div'));
+            for(let d=1;d<=days;d++) {
+                const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const info = agg[dateStr];
                 const cell = document.createElement('div');
                 cell.className = 'calendar-day rounded-lg md:rounded-xl p-1 relative cursor-pointer flex flex-col justify-between items-center md:items-start transition-all hover:shadow-md';
-                if(dData) {
-                    cell.classList.add(dData.total >= 0 ? 'day-profit' : 'day-loss');
-                    cell.innerHTML = `<span class="text-[10px] opacity-80 self-start ml-1 mt-1">${day}</span><span class="text-xs md:text-sm font-bold">${formatMoneyShort(Math.abs(dData.total))}</span><span class="text-[8px] opacity-75 mb-1">${dData.count > 1 ? 'x'+dData.count : ''}</span>`;
+                if(info) {
+                    cell.classList.add(info.total>=0?'day-profit':'day-loss');
+                    cell.innerHTML = `<span class="text-[10px] opacity-80 self-start ml-1 mt-1">${d}</span><span class="text-xs md:text-sm font-bold">${Math.round(Math.abs(info.total))}</span>`;
                     cell.onclick = () => openDetails(dateStr);
                 } else {
                     cell.classList.add('day-neutral');
-                    cell.innerHTML = `<span class="text-[10px] text-slate-400 ml-1 mt-1">${day}</span>`;
-                    cell.onclick = () => { document.getElementById('inputDate').value = dateStr; openEntryModal(); }
+                    cell.innerHTML = `<span class="text-[10px] text-muted ml-1 mt-1">${d}</span>`;
+                    cell.onclick = () => { document.getElementById('inputDate').value=dateStr; openEntryModal(); };
                 }
                 grid.appendChild(cell);
             }
         }
 
-        // --- PAGE 2: ANALYTICS ---
         async function renderAnalytics() {
             const data = (await DataStore.getAll()).sort((a,b) => new Date(a.date) - new Date(b.date));
-            
-            // 1. Calc KPIs
-            let totalPnl = 0, wins = 0, losses = 0, winSum = 0, lossSum = 0;
-            let equityCurve = [];
-            let runningTotal = 0;
+            let totalPnl=0, wins=0, losses=0, winSum=0, lossSum=0, curve=[], running=0;
             
             data.forEach(d => {
-                runningTotal += d.amount;
-                equityCurve.push({ x: d.date, y: runningTotal });
-                
-                totalPnl += d.amount;
-                if(d.amount > 0) { wins++; winSum += d.amount; }
-                else if(d.amount < 0) { losses++; lossSum += d.amount; }
+                running+=d.amount; curve.push({x:d.date,y:running});
+                totalPnl+=d.amount; if(d.amount>0){wins++;winSum+=d.amount;} else if(d.amount<0){losses++;lossSum+=d.amount;}
             });
-
-            const totalTrades = wins + losses;
-            const winRate = totalTrades > 0 ? ((wins / totalTrades) * 100).toFixed(1) : 0;
-            const avgWin = wins > 0 ? winSum / wins : 0;
-            const avgLoss = losses > 0 ? lossSum / losses : 0;
-
-            // 2. Update DOM
-            document.getElementById('kpiTotalPnl').innerText = formatMoney(totalPnl);
-            document.getElementById('kpiTotalPnl').className = `text-2xl font-bold ${totalPnl>=0?'dash-value-green':'dash-value-red'}`;
             
-            document.getElementById('kpiTotalWinVal').innerText = formatMoney(winSum);
-            document.getElementById('kpiTotalLossVal').innerText = formatMoney(lossSum);
-            
-            document.getElementById('kpiWinRate').innerText = winRate + '%';
-            document.getElementById('kpiWinBar').style.width = winRate + '%';
-            
-            document.getElementById('kpiAvgWin').innerText = formatMoney(avgWin);
-            document.getElementById('kpiAvgLoss').innerText = formatMoney(avgLoss);
+            document.getElementById('kpiTotalPnl').innerText = '$'+totalPnl.toFixed(2);
+            document.getElementById('kpiTotalPnl').className = `text-2xl font-bold ${totalPnl>=0?'text-green-500':'text-red-500'}`;
+            document.getElementById('kpiTotalWinVal').innerText = '$'+winSum.toFixed(0);
+            document.getElementById('kpiTotalLossVal').innerText = '$'+Math.abs(lossSum).toFixed(0);
+            const wr = wins+losses>0 ? ((wins/(wins+losses))*100).toFixed(1) : 0;
+            document.getElementById('kpiWinRate').innerText = wr+'%';
+            document.getElementById('kpiWinBar').style.width = wr+'%';
+            document.getElementById('kpiAvgWin').innerText = '$'+(wins>0?(winSum/wins):0).toFixed(0);
+            document.getElementById('kpiAvgLoss').innerText = '$'+(losses>0?(lossSum/losses):0).toFixed(0);
 
-            // 3. Render Chart
             const ctx = document.getElementById('equityChart').getContext('2d');
             if(chartInstance) chartInstance.destroy();
-            
+            const isDark = DataStore.theme === 'dark';
             chartInstance = new Chart(ctx, {
                 type: 'line',
-                data: {
-                    labels: equityCurve.map(p => p.x),
-                    datasets: [{
-                        label: 'Equity Curve',
-                        data: equityCurve.map(p => p.y),
-                        borderColor: '#2563eb',
-                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                        borderWidth: 2,
-                        tension: 0.1,
-                        fill: true,
-                        pointRadius: 0 // Hide points for cleaner look like reference
-                    }]
-                },
+                data: { labels: curve.map(c=>c.x), datasets: [{ label:'Equity', data:curve.map(c=>c.y), borderColor:'#2563eb', backgroundColor:'rgba(37,99,235,0.1)', borderWidth:2, fill:true, pointRadius:0 }] },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { display: false }, // Hide dates on x-axis for cleaner look
-                        y: { grid: { color: '#f1f5f9' } }
-                    }
+                    responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+                    scales: { x:{display:false}, y:{grid:{color: isDark ? '#334155' : '#f1f5f9', borderColor: isDark ? '#334155' : '#f1f5f9' }, ticks:{color: isDark ? '#94a3b8' : '#64748b'}} }
                 }
             });
-
-            // 4. Render History Table (Reverse Chronological)
-            const tbody = document.getElementById('historyTableBody');
-            tbody.innerHTML = [...data].reverse().map(d => `
-                <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100">
-                    <td class="px-4 py-3 text-slate-600">${d.date}</td>
-                    <td class="px-4 py-3"><span class="badge ${getBadgeColor(d.strategy)}">${d.strategy || 'N/A'}</span></td>
-                    <td class="px-4 py-3 text-right font-bold ${d.amount>=0?'text-emerald-600':'text-rose-500'}">${formatMoney(d.amount)}</td>
-                    <td class="px-4 py-3 text-slate-500 truncate max-w-[150px]">${d.notes || '-'}</td>
-                    <td class="px-4 py-3 text-right"><button onclick="deleteEntry(${d.id})" class="text-slate-400 hover:text-rose-500"><i class="fa-solid fa-trash"></i></button></td>
+            
+            document.getElementById('historyTableBody').innerHTML = [...data].reverse().map(d => `
+                <tr class="border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800">
+                    <td class="px-4 py-3 text-muted">${d.date}</td>
+                    <td class="px-4 py-3"><span class="text-xs font-bold uppercase px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">${d.strategy||'-'}</span></td>
+                    <td class="px-4 py-3 text-right font-bold ${d.amount>=0?'text-green-500':'text-red-500'}">${d.amount}</td>
+                    <td class="px-4 py-3 text-muted truncate max-w-[100px]">${d.notes||''}</td>
+                    <td class="px-4 py-3 text-right"><button onclick="deleteEntry(${d.id})" class="text-muted hover:text-red-500"><i class="fa-solid fa-trash"></i></button></td>
                 </tr>
             `).join('');
         }
 
-        // --- HELPERS ---
-        function formatMoney(val) { return (val>=0?'+':'') + '$' + Math.abs(val).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
-        function formatMoneyShort(val) { if(val >= 1000000) return (val/1000000).toFixed(1) + 'm'; if(val >= 1000) return (val/1000).toFixed(1) + 'k'; return Math.round(val); }
-        function getBadgeColor(s) { if(s==='SR Flip')return 'badge-sr'; if(s==='MA')return 'badge-ma'; if(s==='KC')return 'badge-kc'; if(s==='Break Out')return 'badge-bo'; if(s==='News')return 'badge-news'; return 'bg-slate-100 text-slate-500'; }
-        
-        // --- FORM & MODAL ---
+        // --- TABS & MODALS ---
+        async function switchTab(t) {
+            document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(e=>e.classList.remove('active'));
+            const dCal = document.getElementById('desk-tab-calendar');
+            const dAna = document.getElementById('desk-tab-analytics');
+            
+            // Reset Desktop classes (Basic Reset)
+            dCal.className = dAna.className = "text-left px-4 py-3 rounded-lg text-muted font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-all";
+            
+            document.getElementById('tab-'+t).classList.add('active');
+            if(document.getElementById('mob-tab-'+t)) document.getElementById('mob-tab-'+t).classList.add('active');
+            
+            // Active Desktop Styling
+            const activeDeskClass = "text-left px-4 py-3 rounded-lg bg-blue-50 dark:bg-slate-800 text-blue-600 dark:text-blue-400 font-bold transition-all";
+            if(t==='calendar') { dCal.className = activeDeskClass; await renderCalendar(); }
+            else { dAna.className = activeDeskClass; await renderAnalytics(); }
+        }
+
         document.getElementById('entryForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const date = document.getElementById('inputDate').value;
             const amount = parseFloat(document.getElementById('inputAmount').value);
             const notes = document.getElementById('inputNotes').value;
             let strategy = null; document.querySelectorAll('input[name="strategy"]').forEach(r => { if(r.checked) strategy = r.value; });
-            
             if(!date || isNaN(amount)) return;
-            
-            const btn = e.target.querySelector('button');
-            const oldHtml = btn.innerHTML; btn.innerHTML = 'Saved!'; btn.classList.add('bg-emerald-500');
-            
-            await DataStore.add({ id: Date.now(), date, amount, notes, strategy });
-            
-            setTimeout(() => { btn.innerHTML = oldHtml; btn.classList.remove('bg-emerald-500'); }, 500);
-            document.getElementById('inputAmount').value = '';
-            document.getElementById('inputNotes').value = '';
+            await DataStore.add({id:Date.now(),date,amount,notes,strategy});
             closeEntryModal();
-            
-            // Refresh current tab
-            if(document.getElementById('tab-calendar').classList.contains('active')) await renderCalendar();
-            else await renderAnalytics();
+            document.getElementById('inputAmount').value='';
+            if(document.getElementById('tab-calendar').classList.contains('active')) await renderCalendar(); else await renderAnalytics();
         });
 
-        async function deleteEntry(id) { if(confirm('Delete?')) { await DataStore.delete(id); if(document.getElementById('tab-calendar').classList.contains('active')) { await renderCalendar(); closeDetailsModal(); } else { await renderAnalytics(); } } }
-        
-        function changeMonth(off) { currentDate.setMonth(currentDate.getMonth()+off); renderCalendar(); }
+        async function deleteEntry(id) { if(confirm('Delete?')) { await DataStore.delete(id); location.reload(); } }
+        function changeMonth(o) { currentDate.setMonth(currentDate.getMonth()+o); renderCalendar(); }
         function openEntryModal() { document.getElementById('entryModal').classList.remove('hidden'); }
         function closeEntryModal() { document.getElementById('entryModal').classList.add('hidden'); }
-        async function openDetails(dateStr) {
-            const entries = await DataStore.getByDate(dateStr);
-            document.getElementById('detailDateTitle').innerText = dateStr;
-            document.getElementById('detailsList').innerHTML = entries.map(e => `
-                <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 flex justify-between items-center">
-                    <div><span class="badge ${getBadgeColor(e.strategy)} mr-2">${e.strategy||'N/A'}</span><span class="text-sm font-bold text-slate-700">${e.notes||''}</span></div>
-                    <div class="flex gap-3 items-center"><span class="font-bold ${e.amount>=0?'text-emerald-600':'text-rose-500'}">${e.amount}</span><button onclick="deleteEntry(${e.id})" class="text-slate-300 hover:text-rose-500"><i class="fa-solid fa-trash"></i></button></div>
+        function openLogin() { document.getElementById('loginModal').classList.remove('hidden'); }
+        async function performLogin() {
+            const g=document.getElementById('loginGistId').value.trim(); const t=document.getElementById('loginToken').value.trim();
+            DataStore.config = {gistId:g, token:t}; localStorage.setItem('tj_config_v8', JSON.stringify(DataStore.config));
+            await DataStore.load(); alert('Connected!'); location.reload();
+        }
+        function openSettings() { document.getElementById('settingsModal').classList.remove('hidden'); }
+        async function openDetails(d) {
+            const entries = (await DataStore.getAll()).filter(x=>x.date===d);
+            document.getElementById('detailDateTitle').innerText = d;
+            document.getElementById('detailsList').innerHTML = entries.map(e=>`
+                <div class="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                    <div><span class="text-xs font-bold uppercase px-1.5 rounded bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300 mr-2">${e.strategy||'-'}</span><span class="text-sm font-bold text-main">${e.notes||''}</span></div>
+                    <span class="font-bold ${e.amount>=0?'text-green-500':'text-red-500'}">${e.amount}</span>
                 </div>`).join('');
             document.getElementById('detailsModal').classList.remove('hidden');
         }
         function closeDetailsModal() { document.getElementById('detailsModal').classList.add('hidden'); }
-        function openEntryFromDetails() { document.getElementById('inputDate').value = document.getElementById('detailDateTitle').innerText; closeDetailsModal(); openEntryModal(); }
-        function openSettings() { document.getElementById('settingsModal').classList.remove('hidden'); }
-        async function saveSettings() { const g=document.getElementById('settingGistId').value.trim(); const t=document.getElementById('settingToken').value.trim(); localStorage.setItem('tj_config_v8', JSON.stringify({gistId:g,token:t})); DataStore.config={gistId:g,token:t}; await DataStore.load(); document.getElementById('settingsModal').classList.add('hidden'); alert('Saved'); }
+        function openEntryFromDetails() { document.getElementById('inputDate').value=document.getElementById('detailDateTitle').innerText; closeDetailsModal(); openEntryModal(); }
+        function exportData() { DataStore.getAll().then(d => { const c = "data:text/csv;charset=utf-8,Date,Amount,Method,Notes\n"+d.map(x=>`${x.date},${x.amount},${x.strategy||''},"${x.notes||''}"`).join("\n"); const a=document.createElement("a"); a.href=encodeURI(c); a.download="backup.csv"; document.body.appendChild(a); a.click(); }); }
 
+        DataStore.add=async(e)=>{const d=await DataStore.load();d.push(e);await DataStore.save(d);};
+        DataStore.delete=async(i)=>{let d=await DataStore.load();d=d.filter(x=>x.id!==i);await DataStore.save(d);};
+        
         init();
     </script>
 </body>
