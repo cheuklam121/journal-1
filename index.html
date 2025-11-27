@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" class="light"> <!-- Default to light, JS will toggle -->
+<html lang="en" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeJournal v8.1</title>
+    <title>TradeJournal v8.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -14,9 +14,7 @@
             darkMode: 'class',
             theme: {
                 extend: {
-                    colors: {
-                        dark: { 900: '#0f172a', 800: '#1e293b', 700: '#334155' } // Deep blue-black theme
-                    }
+                    colors: { dark: { 900: '#0f172a', 800: '#1e293b', 700: '#334155' } }
                 }
             }
         }
@@ -24,8 +22,6 @@
 
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; height: 100dvh; overflow: hidden; transition: background-color 0.3s, color 0.3s; }
-        
-        /* Scrollbar */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
         /* Calendar Grid */
@@ -34,60 +30,56 @@
         .calendar-day { aspect-ratio: 1; transition: transform 0.1s; }
         .calendar-day:active { transform: scale(0.95); }
         
-        /* Dynamic Colors (Light/Dark) */
         .day-profit { background: #10b981; color: white; border: 1px solid #059669; }
         .day-loss { background: #f43f5e; color: white; border: 1px solid #e11d48; }
         
         .light .day-neutral { background: white; border: 1px solid #e2e8f0; color: #64748b; }
         .dark .day-neutral { background: #1e293b; border: 1px solid #334155; color: #94a3b8; }
 
-        .light .bg-base { background: #f8fafc; }
-        .dark .bg-base { background: #0f172a; }
-        
-        .light .bg-surface { background: white; }
-        .dark .bg-surface { background: #1e293b; border-color: #334155; }
+        .light .bg-base { background: #f8fafc; } .dark .bg-base { background: #0f172a; }
+        .light .bg-surface { background: white; } .dark .bg-surface { background: #1e293b; border-color: #334155; }
+        .light .text-main { color: #1e293b; } .dark .text-main { color: #f1f5f9; }
+        .light .text-muted { color: #64748b; } .dark .text-muted { color: #94a3b8; }
 
-        .light .text-main { color: #1e293b; }
-        .dark .text-main { color: #f1f5f9; }
-        
-        .light .text-muted { color: #64748b; }
-        .dark .text-muted { color: #94a3b8; }
-
-        /* Tab Animation */
         .tab-content { display: none; height: 100%; }
         .tab-content.active { display: flex; animation: fadeIn 0.3s ease-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .light .nav-btn.active { border-bottom: 2px solid #2563eb; color: #2563eb; font-weight: 700; }
         .dark .nav-btn.active { border-bottom: 2px solid #60a5fa; color: #60a5fa; font-weight: 700; }
-
-        /* Strategy Chips */
+        
         .strategy-radio:checked + label { background-color: #eff6ff; color: #2563eb; border-color: #2563eb; font-weight: 700; }
         .dark .strategy-radio:checked + label { background-color: #1e3a8a; color: #93c5fd; border-color: #3b82f6; }
         
-        /* Modal */
         .modal-bg { background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); }
         .slide-up { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         
-        /* FAB */
         .fab { position: absolute; bottom: 24px; right: 24px; width: 56px; height: 56px; border-radius: 50%; background: #2563eb; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4); z-index: 50; }
+
+        /* Timeframe Buttons */
+        .tf-btn { padding: 4px 12px; font-size: 11px; font-weight: 600; border-radius: 6px; transition: all 0.2s; }
+        .light .tf-btn.active { background: #2563eb; color: white; }
+        .light .tf-btn:not(.active) { background: #f1f5f9; color: #64748b; hover:bg-slate-200; }
+        .dark .tf-btn.active { background: #3b82f6; color: white; }
+        .dark .tf-btn:not(.active) { background: #334155; color: #94a3b8; hover:bg-slate-700; }
+
     </style>
 </head>
 <body class="flex flex-col md:flex-row bg-base text-main">
 
-    <!-- SIDEBAR (Desktop) -->
+    <!-- SIDEBAR -->
     <aside class="hidden md:flex w-72 bg-surface border-r border-slate-200 dark:border-slate-700 flex-col z-20 shadow-sm transition-colors">
         <div class="p-6 border-b border-slate-100 dark:border-slate-700">
             <h1 class="text-xl font-bold flex items-center gap-2 text-main"><i class="fa-solid fa-layer-group text-blue-600"></i> TradeJournal</h1>
         </div>
         <nav class="flex flex-col p-4 gap-2">
-            <button onclick="switchTab('calendar')" id="desk-tab-calendar" class="text-left px-4 py-3 rounded-lg bg-blue-50 text-blue-600 font-bold transition-all hover:bg-blue-50 dark:hover:bg-slate-700"><i class="fa-regular fa-calendar mr-2"></i> Calendar</button>
+            <button onclick="switchTab('calendar')" id="desk-tab-calendar" class="text-left px-4 py-3 rounded-lg bg-blue-50 text-blue-600 font-bold transition-all"><i class="fa-regular fa-calendar mr-2"></i> Calendar</button>
             <button onclick="switchTab('analytics')" id="desk-tab-analytics" class="text-left px-4 py-3 rounded-lg text-muted font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"><i class="fa-solid fa-chart-line mr-2"></i> Analytics</button>
         </nav>
         <div class="mt-auto p-4 border-t border-slate-100 dark:border-slate-700 flex gap-2">
             <button onclick="openLogin()" class="flex-1 flex items-center justify-center gap-2 text-sm bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-semibold"><i class="fa-brands fa-github"></i> Login</button>
-            <button onclick="openSettings()" class="w-10 flex items-center justify-center text-muted hover:text-blue-600 dark:hover:text-blue-400 bg-slate-100 dark:bg-slate-800 rounded-lg"><i class="fa-solid fa-gear"></i></button>
+            <button onclick="openSettings()" class="w-10 flex items-center justify-center text-muted hover:text-blue-600 bg-slate-100 dark:bg-slate-800 rounded-lg"><i class="fa-solid fa-gear"></i></button>
         </div>
     </aside>
 
@@ -135,32 +127,56 @@
         <!-- TAB 2: ANALYTICS -->
         <div id="tab-analytics" class="tab-content flex-col overflow-y-auto bg-slate-100 dark:bg-black/20">
             <div class="p-4 md:p-8 max-w-7xl mx-auto w-full space-y-6">
-                <!-- KPI Cards -->
+                
+                <!-- KPI Grid -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <!-- Total PnL -->
                     <div class="bg-surface p-4 rounded-xl border dark:border-slate-700 shadow-sm">
                         <div class="text-xs text-muted mb-1">Total PnL</div>
-                        <div id="kpiTotalPnl" class="text-2xl font-bold">--</div>
-                        <div class="mt-2 flex justify-between text-[10px]"><span class="text-muted">Wins: <span id="kpiTotalWinVal" class="text-green-500">--</span></span><span class="text-muted">Loss: <span id="kpiTotalLossVal" class="text-red-500">--</span></span></div>
+                        <div id="kpiTotalPnl" class="text-xl md:text-2xl font-bold">--</div>
+                        <div class="mt-2 flex justify-between text-[10px]"><span class="text-muted">Win: <span id="kpiTotalWinVal" class="text-green-500">--</span></span><span class="text-muted">Loss: <span id="kpiTotalLossVal" class="text-red-500">--</span></span></div>
                     </div>
+                    
+                    <!-- Win Rate -->
                     <div class="bg-surface p-4 rounded-xl border dark:border-slate-700 shadow-sm">
                         <div class="text-xs text-muted mb-1">Profit Ratio</div>
-                        <div id="kpiWinRate" class="text-2xl font-bold text-main">--%</div>
+                        <div id="kpiWinRate" class="text-xl md:text-2xl font-bold text-main">--%</div>
                         <div class="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full mt-3 overflow-hidden"><div id="kpiWinBar" class="bg-green-500 h-full" style="width: 0%"></div></div>
                     </div>
-                    <div class="bg-surface p-4 rounded-xl border dark:border-slate-700 shadow-sm">
-                        <div class="text-xs text-muted mb-1">Avg Win</div>
-                        <div id="kpiAvgWin" class="text-2xl font-bold text-green-500">--</div>
+                    
+                    <!-- Min Profit Required (New) -->
+                    <div class="bg-surface p-4 rounded-xl border dark:border-slate-700 shadow-sm relative group">
+                        <div class="flex justify-between items-start">
+                            <div class="text-xs text-muted mb-1">Min Profit Req.</div>
+                            <button onclick="setConsistencyRate()" class="text-[10px] text-blue-500 hover:underline bg-blue-50 dark:bg-blue-900/30 px-1.5 py-0.5 rounded">Edit %</button>
+                        </div>
+                        <div id="kpiMinProfit" class="text-xl md:text-2xl font-bold text-main">--</div>
+                        <div class="text-[10px] text-muted mt-1">@ <span id="consistencyRateDisplay">30</span>% Consistency</div>
                     </div>
+
+                    <!-- Avg Stats -->
                     <div class="bg-surface p-4 rounded-xl border dark:border-slate-700 shadow-sm">
-                        <div class="text-xs text-muted mb-1">Avg Loss</div>
-                        <div id="kpiAvgLoss" class="text-2xl font-bold text-red-500">--</div>
+                         <div class="text-xs text-muted mb-1">Avg Win / Loss</div>
+                         <div class="flex justify-between items-end mt-1">
+                             <div><div class="text-[10px] text-muted">Win</div><div id="kpiAvgWin" class="text-lg font-bold text-green-500">--</div></div>
+                             <div class="text-right"><div class="text-[10px] text-muted">Loss</div><div id="kpiAvgLoss" class="text-lg font-bold text-red-500">--</div></div>
+                         </div>
                     </div>
                 </div>
 
-                <!-- Chart -->
+                <!-- Chart with Timeframes -->
                 <div class="bg-surface p-4 rounded-xl shadow-sm border dark:border-slate-700">
-                    <h3 class="text-sm font-bold text-main mb-4">Equity Curve</h3>
-                    <div class="h-64 w-full"><canvas id="equityChart"></canvas></div>
+                    <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
+                        <h3 class="text-sm font-bold text-main">Equity Curve</h3>
+                        <div class="flex gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+                            <button onclick="setTimeframe('1W')" class="tf-btn" id="tf-1W">1W</button>
+                            <button onclick="setTimeframe('1M')" class="tf-btn" id="tf-1M">1M</button>
+                            <button onclick="setTimeframe('3M')" class="tf-btn" id="tf-3M">3M</button>
+                            <button onclick="setTimeframe('YTD')" class="tf-btn" id="tf-YTD">YTD</button>
+                            <button onclick="setTimeframe('ALL')" class="tf-btn active" id="tf-ALL">MAX</button>
+                        </div>
+                    </div>
+                    <div class="h-64 w-full">anvas id="equityChart"></canvas></div>
                 </div>
 
                 <!-- History Table -->
@@ -177,11 +193,11 @@
         </div>
     </div>
 
-    <!-- LOGIN MODAL (Separate from Settings) -->
+    <!-- MODALS (Entry, Login, Settings, Details) same as before -->
+    <!-- LOGIN MODAL -->
     <div id="loginModal" class="fixed inset-0 modal-bg hidden z-50 flex items-center justify-center px-4">
         <div class="bg-surface w-full max-w-sm rounded-2xl p-6 shadow-xl slide-up border dark:border-slate-700">
             <h3 class="font-bold text-lg mb-4 text-main"><i class="fa-brands fa-github text-xl mr-2"></i>Connect Gist</h3>
-            <p class="text-xs text-muted mb-4">Enter your GitHub Gist credentials to sync data.</p>
             <div class="space-y-3 mb-4">
                 <input type="text" id="loginGistId" placeholder="Gist ID" class="w-full p-2 border border-slate-200 dark:border-slate-600 bg-transparent rounded-lg text-sm text-main">
                 <input type="password" id="loginToken" placeholder="Token (ghp_...)" class="w-full p-2 border border-slate-200 dark:border-slate-600 bg-transparent rounded-lg text-sm text-main">
@@ -191,36 +207,26 @@
         </div>
     </div>
 
-    <!-- SETTINGS MODAL (Appearance & Reset) -->
+    <!-- SETTINGS MODAL -->
     <div id="settingsModal" class="fixed inset-0 modal-bg hidden z-50 flex items-center justify-center px-4">
         <div class="bg-surface w-full max-w-sm rounded-2xl p-6 shadow-xl slide-up border dark:border-slate-700">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="font-bold text-lg text-main">Settings</h3>
-                <button onclick="document.getElementById('settingsModal').classList.add('hidden')" class="text-muted"><i class="fa-solid fa-times"></i></button>
-            </div>
-
-            <!-- Appearance -->
+            <div class="flex justify-between items-center mb-6"><h3 class="font-bold text-lg text-main">Settings</h3><button onclick="document.getElementById('settingsModal').classList.add('hidden')" class="text-muted"><i class="fa-solid fa-times"></i></button></div>
             <div class="mb-6">
                 <label class="text-xs font-bold text-muted uppercase block mb-2">Appearance</label>
                 <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
-                    <button onclick="setTheme('light')" class="flex-1 py-1 text-sm rounded-md transition-colors text-muted hover:bg-white dark:hover:bg-slate-600" id="btn-theme-light"><i class="fa-solid fa-sun mr-1"></i> Light</button>
-                    <button onclick="setTheme('dark')" class="flex-1 py-1 text-sm rounded-md transition-colors text-muted hover:bg-white dark:hover:bg-slate-600" id="btn-theme-dark"><i class="fa-solid fa-moon mr-1"></i> Dark</button>
+                    <button onclick="setTheme('light')" class="flex-1 py-1 text-sm rounded-md transition-colors text-muted" id="btn-theme-light"><i class="fa-solid fa-sun mr-1"></i> Light</button>
+                    <button onclick="setTheme('dark')" class="flex-1 py-1 text-sm rounded-md transition-colors text-muted" id="btn-theme-dark"><i class="fa-solid fa-moon mr-1"></i> Dark</button>
                 </div>
             </div>
-
-            <!-- Data Management -->
             <div>
-                <label class="text-xs font-bold text-red-400 uppercase block mb-2">Danger Zone (Erase Data)</label>
+                <label class="text-xs font-bold text-red-400 uppercase block mb-2">Danger Zone</label>
                 <div class="space-y-2">
                     <button onclick="resetData('week')" class="w-full py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-main hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500 text-left px-4">🗑️ Last 7 Days</button>
                     <button onclick="resetData('month')" class="w-full py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-main hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500 text-left px-4">🗑️ Last Month</button>
                     <button onclick="resetData('all')" class="w-full py-2 bg-red-50 dark:bg-red-900/20 text-red-500 border border-red-100 dark:border-red-900 rounded-lg text-sm font-bold hover:bg-red-100 text-left px-4">⚠️ Erase All History</button>
                 </div>
             </div>
-            
-            <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-700 text-center">
-                <button onclick="exportData()" class="text-xs text-blue-500 hover:underline">Download CSV Backup</button>
-            </div>
+            <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-700 text-center"><button onclick="exportData()" class="text-xs text-blue-500 hover:underline">Download CSV Backup</button></div>
         </div>
     </div>
 
@@ -265,24 +271,23 @@
     </div>
 
     <script>
-        // --- STATE & INIT ---
+        // --- STATE ---
         let currentDate = new Date();
-        let currentDetailDateStr = null;
         let chartInstance = null;
-        const FILENAME = 'trade_journal.json';
+        let selectedTimeframe = 'ALL';
+        
         const DataStore = {
             config: JSON.parse(localStorage.getItem('tj_config_v8') || '{}'),
             theme: localStorage.getItem('tj_theme') || 'light',
+            consistencyRate: parseFloat(localStorage.getItem('tj_consistency') || '0.3'), // Default 30%
             load: async () => {
                 if (DataStore.config.gistId && DataStore.config.token) {
                     try {
                         const res = await fetch(`https://api.github.com/gists/${DataStore.config.gistId}`, { headers: { 'Authorization': `token ${DataStore.config.token}` }, cache: 'no-store' });
                         if(res.ok) {
                             const json = await res.json();
-                            if(json.files && json.files[FILENAME]) {
-                                const content = JSON.parse(json.files[FILENAME].content);
-                                localStorage.setItem('tj_data_v8', JSON.stringify(content));
-                                return content;
+                            if(json.files && json.files['trade_journal.json']) {
+                                return JSON.parse(json.files['trade_journal.json'].content);
                             }
                         }
                     } catch(e) {}
@@ -294,75 +299,133 @@
                 if (DataStore.config.gistId && DataStore.config.token) {
                     fetch(`https://api.github.com/gists/${DataStore.config.gistId}`, {
                         method: 'PATCH', headers: { 'Authorization': `token ${DataStore.config.token}` },
-                        body: JSON.stringify({ files: { [FILENAME]: { content: JSON.stringify(data) } } })
+                        body: JSON.stringify({ files: { 'trade_journal.json': { content: JSON.stringify(data) } } })
                     });
                 }
             },
+            add: async (entry) => { const d = await DataStore.load(); d.push(entry); await DataStore.save(d); },
+            delete: async (id) => { let d = await DataStore.load(); d = d.filter(x => x.id !== id); await DataStore.save(d); },
             getAll: async () => await DataStore.load(),
         };
 
+        // --- INIT ---
         async function init() {
             document.getElementById('inputDate').valueAsDate = new Date();
-            setTheme(DataStore.theme); // Apply theme
-            
-            // Populate Login Fields
+            setTheme(DataStore.theme);
+            document.getElementById('consistencyRateDisplay').innerText = (DataStore.consistencyRate * 100).toFixed(0);
             if(DataStore.config.gistId) document.getElementById('loginGistId').value = DataStore.config.gistId;
             if(DataStore.config.token) document.getElementById('loginToken').value = DataStore.config.token;
-            
             await renderCalendar();
         }
 
-        // --- THEME LOGIC ---
-        function setTheme(theme) {
-            DataStore.theme = theme;
-            localStorage.setItem('tj_theme', theme);
-            document.documentElement.classList.remove('light', 'dark');
-            document.documentElement.classList.add(theme);
-            
-            // Update Settings Buttons UI
-            const lightBtn = document.getElementById('btn-theme-light');
-            const darkBtn = document.getElementById('btn-theme-dark');
-            
-            if(theme === 'light') {
-                lightBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
-                lightBtn.classList.remove('text-muted');
-                darkBtn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
-                darkBtn.classList.add('text-muted');
-            } else {
-                darkBtn.classList.add('bg-slate-600', 'shadow-sm', 'text-white', 'font-bold');
-                darkBtn.classList.remove('text-muted');
-                lightBtn.classList.remove('bg-slate-600', 'shadow-sm', 'text-white', 'font-bold');
-                lightBtn.classList.add('text-muted');
-            }
-            
-            // Redraw Chart if Analytics is open (to update grid line colors)
-            if(document.getElementById('tab-analytics').classList.contains('active')) renderAnalytics();
+        // --- TIMEFRAME LOGIC ---
+        async function setTimeframe(tf) {
+            selectedTimeframe = tf;
+            document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tf-'+tf).classList.add('active');
+            await renderAnalytics();
         }
 
-        // --- RESET LOGIC ---
-        async function resetData(scope) {
-            if(!confirm("Are you sure? This cannot be undone.")) return;
-            
-            let data = await DataStore.getAll();
+        function filterDataByTimeframe(data, tf) {
             const now = new Date();
+            let cutoff = new Date('1970-01-01');
             
-            if(scope === 'all') {
-                data = [];
-            } else if (scope === 'week') {
-                const cutoff = new Date(); cutoff.setDate(now.getDate() - 7);
-                data = data.filter(d => new Date(d.date) < cutoff);
-            } else if (scope === 'month') {
-                const cutoff = new Date(); cutoff.setMonth(now.getMonth() - 1);
-                data = data.filter(d => new Date(d.date) < cutoff);
-            }
+            if (tf === '1W') cutoff = new Date(now.setDate(now.getDate() - 7));
+            else if (tf === '1M') cutoff = new Date(now.setMonth(now.getMonth() - 1));
+            else if (tf === '3M') cutoff = new Date(now.setMonth(now.getMonth() - 3));
+            else if (tf === 'YTD') cutoff = new Date(now.getFullYear(), 0, 1);
             
-            await DataStore.save(data);
-            alert('Data erased.');
-            document.getElementById('settingsModal').classList.add('hidden');
-            location.reload();
+            return data.filter(d => new Date(d.date) >= cutoff);
         }
 
-        // --- CORE RENDERERS ---
+        // --- RENDERERS ---
+        async function renderAnalytics() {
+            const allData = (await DataStore.getAll()).sort((a,b) => new Date(a.date) - new Date(b.date));
+            
+            // 1. Total Metrics (Always based on ALL data for KPIs except chart?) 
+            // Usually dashboard KPIs match the filter, let's match the filter.
+            const filteredData = filterDataByTimeframe(allData, selectedTimeframe);
+            
+            // Calc KPIs
+            let totalPnl=0, wins=0, losses=0, winSum=0, lossSum=0, curve=[], running=0;
+            let maxWinDay = 0;
+
+            filteredData.forEach(d => {
+                running += d.amount;
+                curve.push({x:d.date, y:running});
+                totalPnl += d.amount;
+                
+                // Find max win day for consistency calc
+                if(d.amount > 0) {
+                    wins++; winSum += d.amount;
+                    if(d.amount > maxWinDay) maxWinDay = d.amount;
+                } else if (d.amount < 0) {
+                    losses++; lossSum += d.amount;
+                }
+            });
+
+            // Display KPIs
+            document.getElementById('kpiTotalPnl').innerText = '$' + totalPnl.toFixed(2);
+            document.getElementById('kpiTotalPnl').className = `text-xl md:text-2xl font-bold ${totalPnl>=0?'text-green-500':'text-red-500'}`;
+            
+            document.getElementById('kpiTotalWinVal').innerText = wins;
+            document.getElementById('kpiTotalLossVal').innerText = losses;
+            
+            const wr = wins+losses > 0 ? ((wins/(wins+losses))*100).toFixed(1) : 0;
+            document.getElementById('kpiWinRate').innerText = wr + '%';
+            document.getElementById('kpiWinBar').style.width = wr + '%';
+
+            const avgWin = wins>0 ? winSum/wins : 0;
+            const avgLoss = losses>0 ? lossSum/losses : 0;
+            document.getElementById('kpiAvgWin').innerText = '$' + avgWin.toFixed(0);
+            document.getElementById('kpiAvgLoss').innerText = '$' + Math.abs(avgLoss).toFixed(0);
+
+            // Min Profit Req Calc
+            const minReq = DataStore.consistencyRate > 0 ? maxWinDay / DataStore.consistencyRate : 0;
+            document.getElementById('kpiMinProfit').innerText = maxWinDay > 0 ? '$' + minReq.toFixed(0) : 'N/A';
+
+            // Chart
+            const ctx = document.getElementById('equityChart').getContext('2d');
+            if(chartInstance) chartInstance.destroy();
+            const isDark = DataStore.theme === 'dark';
+            
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: { 
+                    labels: curve.map(c=>c.x), 
+                    datasets: [{ 
+                        data: curve.map(c=>c.y), 
+                        borderColor: '#2563eb', 
+                        backgroundColor: 'rgba(37,99,235,0.1)', 
+                        borderWidth: 2, 
+                        fill: true, 
+                        pointRadius: 0 
+                    }] 
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, plugins:{legend:{display:false}},
+                    scales: { 
+                        x:{display:false}, 
+                        y:{
+                            grid:{color: isDark ? '#334155' : '#f1f5f9', borderColor: isDark ? '#334155' : '#f1f5f9'}, 
+                            ticks:{color: isDark ? '#94a3b8' : '#64748b'}
+                        } 
+                    }
+                }
+            });
+
+            // History Table (Show filtered or all? Usually detailed history shows filtered)
+            document.getElementById('historyTableBody').innerHTML = [...filteredData].reverse().map(d => `
+                <tr class="border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800">
+                    <td class="px-4 py-3 text-muted">${d.date}</td>
+                    <td class="px-4 py-3"><span class="text-xs font-bold uppercase px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300">${d.strategy||'-'}</span></td>
+                    <td class="px-4 py-3 text-right font-bold ${d.amount>=0?'text-green-500':'text-red-500'}">${d.amount}</td>
+                    <td class="px-4 py-3 text-muted truncate max-w-[100px]">${d.notes||''}</td>
+                    <td class="px-4 py-3 text-right"><button onclick="deleteEntry(${d.id})" class="text-muted hover:text-red-500"><i class="fa-solid fa-trash"></i></button></td>
+                </tr>
+            `).join('');
+        }
+
         async function renderCalendar() {
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth();
@@ -372,7 +435,7 @@
             const data = await DataStore.getAll();
             const prefix = `${year}-${String(month+1).padStart(2,'0')}`;
             const agg = {};
-            data.filter(d => d.date.startsWith(prefix)).forEach(d => { if(!agg[d.date]) agg[d.date]={total:0,count:0}; agg[d.date].total+=d.amount; agg[d.date].count++; });
+            data.filter(d => d.date.startsWith(prefix)).forEach(d => { if(!agg[d.date]) agg[d.date]={total:0}; agg[d.date].total+=d.amount; });
             
             const total = Object.values(agg).reduce((s,d)=>s+d.total,0);
             const tEl = document.getElementById('monthTotalDisplay');
@@ -402,65 +465,52 @@
             }
         }
 
-        async function renderAnalytics() {
-            const data = (await DataStore.getAll()).sort((a,b) => new Date(a.date) - new Date(b.date));
-            let totalPnl=0, wins=0, losses=0, winSum=0, lossSum=0, curve=[], running=0;
-            
-            data.forEach(d => {
-                running+=d.amount; curve.push({x:d.date,y:running});
-                totalPnl+=d.amount; if(d.amount>0){wins++;winSum+=d.amount;} else if(d.amount<0){losses++;lossSum+=d.amount;}
-            });
-            
-            document.getElementById('kpiTotalPnl').innerText = '$'+totalPnl.toFixed(2);
-            document.getElementById('kpiTotalPnl').className = `text-2xl font-bold ${totalPnl>=0?'text-green-500':'text-red-500'}`;
-            document.getElementById('kpiTotalWinVal').innerText = '$'+winSum.toFixed(0);
-            document.getElementById('kpiTotalLossVal').innerText = '$'+Math.abs(lossSum).toFixed(0);
-            const wr = wins+losses>0 ? ((wins/(wins+losses))*100).toFixed(1) : 0;
-            document.getElementById('kpiWinRate').innerText = wr+'%';
-            document.getElementById('kpiWinBar').style.width = wr+'%';
-            document.getElementById('kpiAvgWin').innerText = '$'+(wins>0?(winSum/wins):0).toFixed(0);
-            document.getElementById('kpiAvgLoss').innerText = '$'+(losses>0?(lossSum/losses):0).toFixed(0);
-
-            const ctx = document.getElementById('equityChart').getContext('2d');
-            if(chartInstance) chartInstance.destroy();
-            const isDark = DataStore.theme === 'dark';
-            chartInstance = new Chart(ctx, {
-                type: 'line',
-                data: { labels: curve.map(c=>c.x), datasets: [{ label:'Equity', data:curve.map(c=>c.y), borderColor:'#2563eb', backgroundColor:'rgba(37,99,235,0.1)', borderWidth:2, fill:true, pointRadius:0 }] },
-                options: {
-                    responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
-                    scales: { x:{display:false}, y:{grid:{color: isDark ? '#334155' : '#f1f5f9', borderColor: isDark ? '#334155' : '#f1f5f9' }, ticks:{color: isDark ? '#94a3b8' : '#64748b'}} }
-                }
-            });
-            
-            document.getElementById('historyTableBody').innerHTML = [...data].reverse().map(d => `
-                <tr class="border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800">
-                    <td class="px-4 py-3 text-muted">${d.date}</td>
-                    <td class="px-4 py-3"><span class="text-xs font-bold uppercase px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">${d.strategy||'-'}</span></td>
-                    <td class="px-4 py-3 text-right font-bold ${d.amount>=0?'text-green-500':'text-red-500'}">${d.amount}</td>
-                    <td class="px-4 py-3 text-muted truncate max-w-[100px]">${d.notes||''}</td>
-                    <td class="px-4 py-3 text-right"><button onclick="deleteEntry(${d.id})" class="text-muted hover:text-red-500"><i class="fa-solid fa-trash"></i></button></td>
-                </tr>
-            `).join('');
+        // --- ACTIONS ---
+        function setConsistencyRate() {
+            const rate = prompt("Enter Consistency Rate (0.1 to 1.0)\nExample: 0.3 for 30%", DataStore.consistencyRate);
+            if(rate && !isNaN(rate)) {
+                DataStore.consistencyRate = parseFloat(rate);
+                localStorage.setItem('tj_consistency', DataStore.consistencyRate);
+                document.getElementById('consistencyRateDisplay').innerText = (DataStore.consistencyRate * 100).toFixed(0);
+                renderAnalytics();
+            }
+        }
+        
+        function setTheme(theme) {
+            DataStore.theme = theme; localStorage.setItem('tj_theme', theme);
+            document.documentElement.classList.remove('light', 'dark');
+            document.documentElement.classList.add(theme);
+            const lightBtn = document.getElementById('btn-theme-light');
+            const darkBtn = document.getElementById('btn-theme-dark');
+            if(theme === 'light') {
+                lightBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold'); lightBtn.classList.remove('text-muted');
+                darkBtn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold'); darkBtn.classList.add('text-muted');
+            } else {
+                darkBtn.classList.add('bg-slate-600', 'shadow-sm', 'text-white', 'font-bold'); darkBtn.classList.remove('text-muted');
+                lightBtn.classList.remove('bg-slate-600', 'shadow-sm', 'text-white', 'font-bold'); lightBtn.classList.add('text-muted');
+            }
+            if(document.getElementById('tab-analytics').classList.contains('active')) renderAnalytics();
+        }
+        
+        async function resetData(scope) {
+            if(!confirm("Are you sure?")) return;
+            let data = await DataStore.getAll(); const now = new Date();
+            if(scope === 'all') data = [];
+            else if (scope === 'week') { const cutoff = new Date(); cutoff.setDate(now.getDate() - 7); data = data.filter(d => new Date(d.date) < cutoff); }
+            else if (scope === 'month') { const cutoff = new Date(); cutoff.setMonth(now.getMonth() - 1); data = data.filter(d => new Date(d.date) < cutoff); }
+            await DataStore.save(data); alert('Data erased.'); location.reload();
         }
 
-        // --- TABS & MODALS ---
-        async function switchTab(t) {
+        // Standard Modals & Tabs logic (same as v8.1)
+        function switchTab(t) {
             document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(e=>e.classList.remove('active'));
-            const dCal = document.getElementById('desk-tab-calendar');
-            const dAna = document.getElementById('desk-tab-analytics');
-            
-            // Reset Desktop classes (Basic Reset)
-            dCal.className = dAna.className = "text-left px-4 py-3 rounded-lg text-muted font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-all";
-            
+            const dC = document.getElementById('desk-tab-calendar'); const dA = document.getElementById('desk-tab-analytics');
+            dC.className = dA.className = "text-left px-4 py-3 rounded-lg text-muted font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-all";
             document.getElementById('tab-'+t).classList.add('active');
             if(document.getElementById('mob-tab-'+t)) document.getElementById('mob-tab-'+t).classList.add('active');
-            
-            // Active Desktop Styling
-            const activeDeskClass = "text-left px-4 py-3 rounded-lg bg-blue-50 dark:bg-slate-800 text-blue-600 dark:text-blue-400 font-bold transition-all";
-            if(t==='calendar') { dCal.className = activeDeskClass; await renderCalendar(); }
-            else { dAna.className = activeDeskClass; await renderAnalytics(); }
+            const act = "text-left px-4 py-3 rounded-lg bg-blue-50 dark:bg-slate-800 text-blue-600 dark:text-blue-400 font-bold transition-all";
+            if(t==='calendar') { dC.className = act; renderCalendar(); } else { dA.className = act; renderAnalytics(); }
         }
 
         document.getElementById('entryForm').addEventListener('submit', async (e) => {
@@ -471,39 +521,22 @@
             let strategy = null; document.querySelectorAll('input[name="strategy"]').forEach(r => { if(r.checked) strategy = r.value; });
             if(!date || isNaN(amount)) return;
             await DataStore.add({id:Date.now(),date,amount,notes,strategy});
-            closeEntryModal();
-            document.getElementById('inputAmount').value='';
-            if(document.getElementById('tab-calendar').classList.contains('active')) await renderCalendar(); else await renderAnalytics();
+            closeEntryModal(); document.getElementById('inputAmount').value='';
+            if(document.getElementById('tab-calendar').classList.contains('active')) renderCalendar(); else renderAnalytics();
         });
-
-        async function deleteEntry(id) { if(confirm('Delete?')) { await DataStore.delete(id); location.reload(); } }
+        
+        async function deleteEntry(id) { if(confirm('Delete?')) { await DataStore.delete(id); if(document.getElementById('tab-calendar').classList.contains('active')) { renderCalendar(); closeDetailsModal(); } else { renderAnalytics(); } } }
         function changeMonth(o) { currentDate.setMonth(currentDate.getMonth()+o); renderCalendar(); }
         function openEntryModal() { document.getElementById('entryModal').classList.remove('hidden'); }
         function closeEntryModal() { document.getElementById('entryModal').classList.add('hidden'); }
         function openLogin() { document.getElementById('loginModal').classList.remove('hidden'); }
-        async function performLogin() {
-            const g=document.getElementById('loginGistId').value.trim(); const t=document.getElementById('loginToken').value.trim();
-            DataStore.config = {gistId:g, token:t}; localStorage.setItem('tj_config_v8', JSON.stringify(DataStore.config));
-            await DataStore.load(); alert('Connected!'); location.reload();
-        }
         function openSettings() { document.getElementById('settingsModal').classList.remove('hidden'); }
-        async function openDetails(d) {
-            const entries = (await DataStore.getAll()).filter(x=>x.date===d);
-            document.getElementById('detailDateTitle').innerText = d;
-            document.getElementById('detailsList').innerHTML = entries.map(e=>`
-                <div class="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 flex justify-between items-center">
-                    <div><span class="text-xs font-bold uppercase px-1.5 rounded bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300 mr-2">${e.strategy||'-'}</span><span class="text-sm font-bold text-main">${e.notes||''}</span></div>
-                    <span class="font-bold ${e.amount>=0?'text-green-500':'text-red-500'}">${e.amount}</span>
-                </div>`).join('');
-            document.getElementById('detailsModal').classList.remove('hidden');
-        }
+        async function performLogin() { const g=document.getElementById('loginGistId').value.trim(); const t=document.getElementById('loginToken').value.trim(); DataStore.config={gistId:g,token:t}; localStorage.setItem('tj_config_v8', JSON.stringify(DataStore.config)); await DataStore.load(); alert('Connected!'); location.reload(); }
+        async function openDetails(d) { const entries=(await DataStore.getAll()).filter(x=>x.date===d); document.getElementById('detailDateTitle').innerText=d; document.getElementById('detailsList').innerHTML=entries.map(e=>`<div class="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 flex justify-between items-center"><div><span class="text-xs font-bold uppercase px-1.5 rounded bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300 mr-2">${e.strategy||'-'}</span><span class="text-sm font-bold text-main">${e.notes||''}</span></div><span class="font-bold ${e.amount>=0?'text-green-500':'text-red-500'}">${e.amount}</span></div>`).join(''); document.getElementById('detailsModal').classList.remove('hidden'); }
         function closeDetailsModal() { document.getElementById('detailsModal').classList.add('hidden'); }
         function openEntryFromDetails() { document.getElementById('inputDate').value=document.getElementById('detailDateTitle').innerText; closeDetailsModal(); openEntryModal(); }
-        function exportData() { DataStore.getAll().then(d => { const c = "data:text/csv;charset=utf-8,Date,Amount,Method,Notes\n"+d.map(x=>`${x.date},${x.amount},${x.strategy||''},"${x.notes||''}"`).join("\n"); const a=document.createElement("a"); a.href=encodeURI(c); a.download="backup.csv"; document.body.appendChild(a); a.click(); }); }
+        function exportData() { DataStore.getAll().then(d => { const c="data:text/csv;charset=utf-8,Date,Amount,Method,Notes\n"+d.map(x=>`${x.date},${x.amount},${x.strategy||''},"${x.notes||''}"`).join("\n"); const a=document.createElement("a"); a.href=encodeURI(c); a.download="backup.csv"; document.body.appendChild(a); a.click(); }); }
 
-        DataStore.add=async(e)=>{const d=await DataStore.load();d.push(e);await DataStore.save(d);};
-        DataStore.delete=async(i)=>{let d=await DataStore.load();d=d.filter(x=>x.id!==i);await DataStore.save(d);};
-        
         init();
     </script>
 </body>
