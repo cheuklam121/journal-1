@@ -3,12 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TradeJournal v8.2 Fixed</title>
+    <title>TradeJournal v8.2 Stable</title>
+    
+    <!-- Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- Tailwind Config -->
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -30,9 +33,11 @@
         .calendar-day { aspect-ratio: 1; transition: transform 0.1s; }
         .calendar-day:active { transform: scale(0.95); }
         
+        /* Status Colors */
         .day-profit { background: #10b981; color: white; border: 1px solid #059669; }
         .day-loss { background: #f43f5e; color: white; border: 1px solid #e11d48; }
         
+        /* Theme Styles */
         .light .day-neutral { background: white; border: 1px solid #e2e8f0; color: #64748b; }
         .dark .day-neutral { background: #1e293b; border: 1px solid #334155; color: #94a3b8; }
 
@@ -41,28 +46,31 @@
         .light .text-main { color: #1e293b; } .dark .text-main { color: #f1f5f9; }
         .light .text-muted { color: #64748b; } .dark .text-muted { color: #94a3b8; }
 
-        .tab-content { display: none; height: 100%; }
+        /* Tabs & Nav */
+        .tab-content { display: none; height: 100%; flex-direction: column; }
         .tab-content.active { display: flex; animation: fadeIn 0.3s ease-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .light .nav-btn.active { border-bottom: 2px solid #2563eb; color: #2563eb; font-weight: 700; }
         .dark .nav-btn.active { border-bottom: 2px solid #60a5fa; color: #60a5fa; font-weight: 700; }
         
-        .strategy-radio:checked + label { background-color: #eff6ff; color: #2563eb; border-color: #2563eb; font-weight: 700; }
-        .dark .strategy-radio:checked + label { background-color: #1e3a8a; color: #93c5fd; border-color: #3b82f6; }
-        
-        .modal-bg { background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); }
-        .slide-up { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        
-        .fab { position: absolute; bottom: 24px; right: 24px; width: 56px; height: 56px; border-radius: 50%; background: #2563eb; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4); z-index: 50; }
-
         /* Timeframe Buttons */
         .tf-btn { padding: 4px 12px; font-size: 11px; font-weight: 600; border-radius: 6px; transition: all 0.2s; }
         .light .tf-btn.active { background: #2563eb; color: white; }
         .light .tf-btn:not(.active) { background: #f1f5f9; color: #64748b; hover:bg-slate-200; }
         .dark .tf-btn.active { background: #3b82f6; color: white; }
         .dark .tf-btn:not(.active) { background: #334155; color: #94a3b8; hover:bg-slate-700; }
+
+        /* Inputs */
+        .strategy-radio:checked + label { background-color: #eff6ff; color: #2563eb; border-color: #2563eb; font-weight: 700; }
+        .dark .strategy-radio:checked + label { background-color: #1e3a8a; color: #93c5fd; border-color: #3b82f6; }
+        
+        /* Modals */
+        .modal-bg { background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); }
+        .slide-up { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        
+        .fab { position: absolute; bottom: 24px; right: 24px; width: 56px; height: 56px; border-radius: 50%; background: #2563eb; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4); z-index: 50; }
     </style>
 </head>
 <body class="flex flex-col md:flex-row bg-base text-main">
@@ -98,7 +106,7 @@
         </div>
 
         <!-- TAB 1: CALENDAR -->
-        <div id="tab-calendar" class="tab-content active flex-col">
+        <div id="tab-calendar" class="tab-content active">
             <header class="bg-surface md:bg-transparent border-b md:border-none border-slate-200 dark:border-slate-700 px-4 py-3 md:px-8 md:py-6 flex justify-between items-center shrink-0 transition-colors">
                 <div class="flex items-center gap-3 bg-slate-100 dark:bg-slate-800 md:bg-surface p-1 rounded-lg transition-colors">
                     <button onclick="changeMonth(-1)" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-white dark:hover:bg-slate-700 text-muted"><i class="fa-solid fa-chevron-left text-xs"></i></button>
@@ -124,36 +132,36 @@
         </div>
 
         <!-- TAB 2: ANALYTICS -->
-        <div id="tab-analytics" class="tab-content flex-col overflow-y-auto bg-slate-100 dark:bg-black/20">
+        <div id="tab-analytics" class="tab-content overflow-y-auto bg-slate-100 dark:bg-black/20">
             <div class="p-4 md:p-8 max-w-7xl mx-auto w-full space-y-6">
                 
                 <!-- KPI Grid -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <!-- Total PnL -->
+                    <!-- PnL -->
                     <div class="bg-surface p-4 rounded-xl border dark:border-slate-700 shadow-sm">
                         <div class="text-xs text-muted mb-1">Total PnL</div>
                         <div id="kpiTotalPnl" class="text-xl md:text-2xl font-bold">--</div>
-                        <div class="mt-2 flex justify-between text-[10px]"><span class="text-muted">Win: <span id="kpiTotalWinVal" class="text-green-500">--</span></span><span class="text-muted">Loss: <span id="kpiTotalLossVal" class="text-red-500">--</span></span></div>
+                        <div class="mt-2 flex justify-between text-[10px]"><span class="text-muted">W: <span id="kpiTotalWinVal" class="text-green-500">0</span></span><span class="text-muted">L: <span id="kpiTotalLossVal" class="text-red-500">0</span></span></div>
                     </div>
                     
                     <!-- Win Rate -->
                     <div class="bg-surface p-4 rounded-xl border dark:border-slate-700 shadow-sm">
                         <div class="text-xs text-muted mb-1">Profit Ratio</div>
-                        <div id="kpiWinRate" class="text-xl md:text-2xl font-bold text-main">--%</div>
+                        <div id="kpiWinRate" class="text-xl md:text-2xl font-bold text-main">0%</div>
                         <div class="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full mt-3 overflow-hidden"><div id="kpiWinBar" class="bg-green-500 h-full" style="width: 0%"></div></div>
                     </div>
                     
-                    <!-- Min Profit Required (New) -->
-                    <div class="bg-surface p-4 rounded-xl border dark:border-slate-700 shadow-sm relative group">
+                    <!-- Consistency -->
+                    <div class="bg-surface p-4 rounded-xl border dark:border-slate-700 shadow-sm">
                         <div class="flex justify-between items-start">
                             <div class="text-xs text-muted mb-1">Min Profit Req.</div>
-                            <button onclick="setConsistencyRate()" class="text-[10px] text-blue-500 hover:underline bg-blue-50 dark:bg-blue-900/30 px-1.5 py-0.5 rounded">Edit %</button>
+                            <button onclick="setConsistencyRate()" class="text-[10px] text-blue-500 bg-blue-50 dark:bg-blue-900/30 px-1.5 py-0.5 rounded">Edit %</button>
                         </div>
                         <div id="kpiMinProfit" class="text-xl md:text-2xl font-bold text-main">--</div>
                         <div class="text-[10px] text-muted mt-1">@ <span id="consistencyRateDisplay">30</span>% Consistency</div>
                     </div>
 
-                    <!-- Avg Stats -->
+                    <!-- Averages -->
                     <div class="bg-surface p-4 rounded-xl border dark:border-slate-700 shadow-sm">
                          <div class="text-xs text-muted mb-1">Avg Win / Loss</div>
                          <div class="flex justify-between items-end mt-1">
@@ -163,7 +171,7 @@
                     </div>
                 </div>
 
-                <!-- Chart with Timeframes -->
+                <!-- Equity Curve -->
                 <div class="bg-surface p-4 rounded-xl shadow-sm border dark:border-slate-700">
                     <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
                         <h3 class="text-sm font-bold text-main">Equity Curve</h3>
@@ -175,8 +183,9 @@
                             <button onclick="setTimeframe('ALL')" class="tf-btn active" id="tf-ALL">MAX</button>
                         </div>
                     </div>
-                    <!-- FIXED: Added correct closing bracket for canvas -->
-                    <div class="h-64 w-full">anvas id="equityChart"></canvas></div>
+                    <div class="h-64 w-full relative">
+                        anvas id="equityChart"></canvas>
+                    </div>
                 </div>
 
                 <!-- History Table -->
@@ -193,7 +202,7 @@
         </div>
     </div>
 
-    <!-- LOGIN MODAL -->
+    <!-- MODALS (Login, Settings, Entry, Details) -->
     <div id="loginModal" class="fixed inset-0 modal-bg hidden z-50 flex items-center justify-center px-4">
         <div class="bg-surface w-full max-w-sm rounded-2xl p-6 shadow-xl slide-up border dark:border-slate-700">
             <h3 class="font-bold text-lg mb-4 text-main"><i class="fa-brands fa-github text-xl mr-2"></i>Connect Gist</h3>
@@ -206,7 +215,6 @@
         </div>
     </div>
 
-    <!-- SETTINGS MODAL -->
     <div id="settingsModal" class="fixed inset-0 modal-bg hidden z-50 flex items-center justify-center px-4">
         <div class="bg-surface w-full max-w-sm rounded-2xl p-6 shadow-xl slide-up border dark:border-slate-700">
             <div class="flex justify-between items-center mb-6"><h3 class="font-bold text-lg text-main">Settings</h3><button onclick="document.getElementById('settingsModal').classList.add('hidden')" class="text-muted"><i class="fa-solid fa-times"></i></button></div>
@@ -229,7 +237,6 @@
         </div>
     </div>
 
-    <!-- ENTRY MODAL -->
     <div id="entryModal" class="fixed inset-0 modal-bg hidden z-50 flex items-end md:items-center justify-center">
         <div class="bg-surface w-full md:w-96 rounded-t-2xl md:rounded-2xl shadow-2xl slide-up border dark:border-slate-700 max-h-[90dvh] flex flex-col">
             <div class="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
@@ -257,7 +264,6 @@
         </div>
     </div>
 
-    <!-- DETAILS MODAL -->
     <div id="detailsModal" class="fixed inset-0 modal-bg hidden z-50 flex items-end md:items-center justify-center">
         <div class="bg-surface w-full md:w-[480px] h-[70dvh] md:h-[600px] rounded-t-2xl md:rounded-2xl shadow-2xl slide-up border dark:border-slate-700 flex flex-col">
             <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 md:rounded-t-2xl">
@@ -278,7 +284,7 @@
         const DataStore = {
             config: JSON.parse(localStorage.getItem('tj_config_v8') || '{}'),
             theme: localStorage.getItem('tj_theme') || 'light',
-            consistencyRate: parseFloat(localStorage.getItem('tj_consistency') || '0.3'), // Default 30%
+            consistencyRate: parseFloat(localStorage.getItem('tj_consistency') || '0.3'),
             load: async () => {
                 if (DataStore.config.gistId && DataStore.config.token) {
                     try {
@@ -289,7 +295,7 @@
                                 return JSON.parse(json.files['trade_journal.json'].content);
                             }
                         }
-                    } catch(e) {}
+                    } catch(e) { console.error(e); }
                 }
                 return JSON.parse(localStorage.getItem('tj_data_v8') || '[]');
             },
@@ -307,7 +313,6 @@
             getAll: async () => await DataStore.load(),
         };
 
-        // --- INIT ---
         async function init() {
             document.getElementById('inputDate').valueAsDate = new Date();
             setTheme(DataStore.theme);
@@ -317,113 +322,70 @@
             await renderCalendar();
         }
 
-        // --- TIMEFRAME LOGIC ---
         async function setTimeframe(tf) {
             selectedTimeframe = tf;
             document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('tf-'+tf).classList.add('active');
-            await renderAnalytics();
+            if(document.getElementById('tab-analytics').classList.contains('active')) await renderAnalytics();
         }
 
         function filterDataByTimeframe(data, tf) {
             const now = new Date();
+            now.setHours(23, 59, 59, 999); // Set to end of today
             let cutoff = new Date('1970-01-01');
             
-            // Create specific dates for comparison to avoid mutation issues
-            if (tf === '1W') {
-                cutoff = new Date();
-                cutoff.setDate(now.getDate() - 7);
-            }
-            else if (tf === '1M') {
-                cutoff = new Date();
-                cutoff.setMonth(now.getMonth() - 1);
-            }
-            else if (tf === '3M') {
-                cutoff = new Date();
-                cutoff.setMonth(now.getMonth() - 3);
-            }
-            else if (tf === 'YTD') {
-                cutoff = new Date(now.getFullYear(), 0, 1);
-            }
+            if (tf === '1W') { cutoff = new Date(); cutoff.setDate(now.getDate() - 7); }
+            else if (tf === '1M') { cutoff = new Date(); cutoff.setMonth(now.getMonth() - 1); }
+            else if (tf === '3M') { cutoff = new Date(); cutoff.setMonth(now.getMonth() - 3); }
+            else if (tf === 'YTD') { cutoff = new Date(now.getFullYear(), 0, 1); }
             
             return data.filter(d => new Date(d.date) >= cutoff);
         }
 
-        // --- RENDERERS ---
         async function renderAnalytics() {
-            const allData = (await DataStore.getAll()).sort((a,b) => new Date(a.date) - new Date(b.date));
+            const allData = (await DataStore.getAll() || []).sort((a,b) => new Date(a.date) - new Date(b.date));
             const filteredData = filterDataByTimeframe(allData, selectedTimeframe);
             
-            // Calc KPIs
-            let totalPnl=0, wins=0, losses=0, winSum=0, lossSum=0, curve=[], running=0;
-            let maxWinDay = 0;
-
-            // For Equity Curve: We need to start "running total" from 0 at the start of the selected period
-            // OR continue from previous? Standard practice for "Period PnL" is starting at 0.
+            let totalPnl=0, wins=0, losses=0, winSum=0, lossSum=0, curve=[], running=0, maxWinDay=0;
             
             filteredData.forEach(d => {
-                running += d.amount;
-                curve.push({x:d.date, y:running});
+                running += d.amount; curve.push({x:d.date, y:running});
                 totalPnl += d.amount;
-                
-                if(d.amount > 0) {
-                    wins++; winSum += d.amount;
-                    if(d.amount > maxWinDay) maxWinDay = d.amount;
-                } else if (d.amount < 0) {
-                    losses++; lossSum += d.amount;
-                }
+                if(d.amount > 0) { wins++; winSum+=d.amount; if(d.amount>maxWinDay) maxWinDay=d.amount; }
+                else if(d.amount < 0) { losses++; lossSum+=d.amount; }
             });
 
-            // Display KPIs
-            document.getElementById('kpiTotalPnl').innerText = '$' + totalPnl.toFixed(2);
+            // Update DOM
+            document.getElementById('kpiTotalPnl').innerText = '$'+totalPnl.toFixed(2);
             document.getElementById('kpiTotalPnl').className = `text-xl md:text-2xl font-bold ${totalPnl>=0?'text-green-500':'text-red-500'}`;
+            document.getElementById('kpiTotalWinVal').innerText = wins; document.getElementById('kpiTotalLossVal').innerText = losses;
             
-            document.getElementById('kpiTotalWinVal').innerText = wins;
-            document.getElementById('kpiTotalLossVal').innerText = losses;
+            const wr = wins+losses>0 ? ((wins/(wins+losses))*100).toFixed(1) : 0;
+            document.getElementById('kpiWinRate').innerText = wr+'%'; document.getElementById('kpiWinBar').style.width = wr+'%';
             
-            const wr = wins+losses > 0 ? ((wins/(wins+losses))*100).toFixed(1) : 0;
-            document.getElementById('kpiWinRate').innerText = wr + '%';
-            document.getElementById('kpiWinBar').style.width = wr + '%';
+            const avgWin = wins>0 ? winSum/wins : 0; const avgLoss = losses>0 ? lossSum/losses : 0;
+            document.getElementById('kpiAvgWin').innerText = '$'+avgWin.toFixed(0); document.getElementById('kpiAvgLoss').innerText = '$'+Math.abs(avgLoss).toFixed(0);
+            
+            const minReq = DataStore.consistencyRate>0 ? maxWinDay/DataStore.consistencyRate : 0;
+            document.getElementById('kpiMinProfit').innerText = maxWinDay>0 ? '$'+minReq.toFixed(0) : 'N/A';
 
-            const avgWin = wins>0 ? winSum/wins : 0;
-            const avgLoss = losses>0 ? lossSum/losses : 0;
-            document.getElementById('kpiAvgWin').innerText = '$' + avgWin.toFixed(0);
-            document.getElementById('kpiAvgLoss').innerText = '$' + Math.abs(avgLoss).toFixed(0);
-
-            const minReq = DataStore.consistencyRate > 0 ? maxWinDay / DataStore.consistencyRate : 0;
-            document.getElementById('kpiMinProfit').innerText = maxWinDay > 0 ? '$' + minReq.toFixed(0) : 'N/A';
-
-            // Chart Rendering
+            // Chart
             const ctx = document.getElementById('equityChart').getContext('2d');
             if(chartInstance) chartInstance.destroy();
-            const isDark = DataStore.theme === 'dark';
             
-            // Handle empty data case
-            const chartLabels = curve.length ? curve.map(c=>c.x) : ['Start'];
-            const chartData = curve.length ? curve.map(c=>c.y) : [0];
+            const isDark = DataStore.theme === 'dark';
+            const labels = curve.length ? curve.map(c=>c.x) : ['Start'];
+            const data = curve.length ? curve.map(c=>c.y) : [0];
 
             chartInstance = new Chart(ctx, {
                 type: 'line',
                 data: { 
-                    labels: chartLabels, 
-                    datasets: [{ 
-                        data: chartData, 
-                        borderColor: '#2563eb', 
-                        backgroundColor: 'rgba(37,99,235,0.1)', 
-                        borderWidth: 2, 
-                        fill: true, 
-                        pointRadius: curve.length > 1 ? 0 : 3 // Show point if only 1 data point
-                    }] 
+                    labels: labels, 
+                    datasets: [{ data: data, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.1)', borderWidth: 2, fill: true, pointRadius: curve.length > 1 ? 0 : 3 }] 
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false, plugins:{legend:{display:false}},
-                    scales: { 
-                        x:{display:false}, 
-                        y:{
-                            grid:{color: isDark ? '#334155' : '#f1f5f9', borderColor: isDark ? '#334155' : '#f1f5f9'}, 
-                            ticks:{color: isDark ? '#94a3b8' : '#64748b'}
-                        } 
-                    }
+                    scales: { x:{display:false}, y:{grid:{color: isDark ? '#334155' : '#f1f5f9', borderColor: isDark ? '#334155' : '#f1f5f9'}, ticks:{color: isDark ? '#94a3b8' : '#64748b'}} }
                 }
             });
 
@@ -439,15 +401,12 @@
         }
 
         async function renderCalendar() {
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
+            const year = currentDate.getFullYear(); const month = currentDate.getMonth();
             const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
             document.getElementById('currentMonthDisplay').innerText = `${months[month]} ${year}`;
-            
             const data = await DataStore.getAll();
             const prefix = `${year}-${String(month+1).padStart(2,'0')}`;
-            const agg = {};
-            data.filter(d => d.date.startsWith(prefix)).forEach(d => { if(!agg[d.date]) agg[d.date]={total:0}; agg[d.date].total+=d.amount; });
+            const agg = {}; data.filter(d => d.date.startsWith(prefix)).forEach(d => { if(!agg[d.date]) agg[d.date]={total:0}; agg[d.date].total+=d.amount; });
             
             const total = Object.values(agg).reduce((s,d)=>s+d.total,0);
             const tEl = document.getElementById('monthTotalDisplay');
@@ -455,14 +414,11 @@
             tEl.className = `text-lg md:text-2xl font-bold ${total>=0?'text-emerald-500':'text-red-500'}`;
             
             const grid = document.getElementById('calendarGrid'); grid.innerHTML = '';
-            const days = new Date(year, month+1, 0).getDate();
-            const first = new Date(year, month, 1).getDay();
-            
+            const days = new Date(year, month+1, 0).getDate(); const first = new Date(year, month, 1).getDay();
             for(let i=0;i<first;i++) grid.appendChild(document.createElement('div'));
             for(let d=1;d<=days;d++) {
                 const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                const info = agg[dateStr];
-                const cell = document.createElement('div');
+                const info = agg[dateStr]; const cell = document.createElement('div');
                 cell.className = 'calendar-day rounded-lg md:rounded-xl p-1 relative cursor-pointer flex flex-col justify-between items-center md:items-start transition-all hover:shadow-md';
                 if(info) {
                     cell.classList.add(info.total>=0?'day-profit':'day-loss');
@@ -477,7 +433,19 @@
             }
         }
 
-        // --- ACTIONS ---
+        // --- INTERACTIONS ---
+        function switchTab(t) {
+            document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(e=>e.classList.remove('active'));
+            const dC = document.getElementById('desk-tab-calendar'); const dA = document.getElementById('desk-tab-analytics');
+            dC.className = dA.className = "text-left px-4 py-3 rounded-lg text-muted font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-all";
+            document.getElementById('tab-'+t).classList.add('active');
+            if(document.getElementById('mob-tab-'+t)) document.getElementById('mob-tab-'+t).classList.add('active');
+            const act = "text-left px-4 py-3 rounded-lg bg-blue-50 dark:bg-slate-800 text-blue-600 dark:text-blue-400 font-bold transition-all";
+            if(t==='calendar') { dC.className = act; renderCalendar(); } 
+            else { dA.className = act; renderAnalytics(); }
+        }
+
         function setConsistencyRate() {
             const rate = prompt("Enter Consistency Rate (0.1 to 1.0)\nExample: 0.3 for 30%", DataStore.consistencyRate);
             if(rate && !isNaN(rate)) {
@@ -487,56 +455,17 @@
                 renderAnalytics();
             }
         }
-        
         function setTheme(theme) {
             DataStore.theme = theme; localStorage.setItem('tj_theme', theme);
-            document.documentElement.classList.remove('light', 'dark');
-            document.documentElement.classList.add(theme);
-            const lightBtn = document.getElementById('btn-theme-light');
-            const darkBtn = document.getElementById('btn-theme-dark');
-            if(theme === 'light') {
-                lightBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold'); lightBtn.classList.remove('text-muted');
-                darkBtn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold'); darkBtn.classList.add('text-muted');
-            } else {
-                darkBtn.classList.add('bg-slate-600', 'shadow-sm', 'text-white', 'font-bold'); darkBtn.classList.remove('text-muted');
-                lightBtn.classList.remove('bg-slate-600', 'shadow-sm', 'text-white', 'font-bold'); lightBtn.classList.add('text-muted');
-            }
+            document.documentElement.classList.remove('light', 'dark'); document.documentElement.classList.add(theme);
+            const l = document.getElementById('btn-theme-light'); const d = document.getElementById('btn-theme-dark');
+            if(theme === 'light') { l.className="flex-1 py-1 text-sm rounded-md transition-colors bg-white shadow-sm text-blue-600 font-bold"; d.className="flex-1 py-1 text-sm rounded-md transition-colors text-muted"; }
+            else { d.className="flex-1 py-1 text-sm rounded-md transition-colors bg-slate-600 shadow-sm text-white font-bold"; l.className="flex-1 py-1 text-sm rounded-md transition-colors text-muted"; }
             if(document.getElementById('tab-analytics').classList.contains('active')) renderAnalytics();
         }
-        
-        async function resetData(scope) {
-            if(!confirm("Are you sure?")) return;
-            let data = await DataStore.getAll(); const now = new Date();
-            if(scope === 'all') data = [];
-            else if (scope === 'week') { const cutoff = new Date(); cutoff.setDate(now.getDate() - 7); data = data.filter(d => new Date(d.date) < cutoff); }
-            else if (scope === 'month') { const cutoff = new Date(); cutoff.setMonth(now.getMonth() - 1); data = data.filter(d => new Date(d.date) < cutoff); }
-            await DataStore.save(data); alert('Data erased.'); location.reload();
-        }
-
-        function switchTab(t) {
-            document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(e=>e.classList.remove('active'));
-            const dC = document.getElementById('desk-tab-calendar'); const dA = document.getElementById('desk-tab-analytics');
-            dC.className = dA.className = "text-left px-4 py-3 rounded-lg text-muted font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-all";
-            document.getElementById('tab-'+t).classList.add('active');
-            if(document.getElementById('mob-tab-'+t)) document.getElementById('mob-tab-'+t).classList.add('active');
-            const act = "text-left px-4 py-3 rounded-lg bg-blue-50 dark:bg-slate-800 text-blue-600 dark:text-blue-400 font-bold transition-all";
-            if(t==='calendar') { dC.className = act; renderCalendar(); } else { dA.className = act; renderAnalytics(); }
-        }
-
-        document.getElementById('entryForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const date = document.getElementById('inputDate').value;
-            const amount = parseFloat(document.getElementById('inputAmount').value);
-            const notes = document.getElementById('inputNotes').value;
-            let strategy = null; document.querySelectorAll('input[name="strategy"]').forEach(r => { if(r.checked) strategy = r.value; });
-            if(!date || isNaN(amount)) return;
-            await DataStore.add({id:Date.now(),date,amount,notes,strategy});
-            closeEntryModal(); document.getElementById('inputAmount').value='';
-            if(document.getElementById('tab-calendar').classList.contains('active')) renderCalendar(); else renderAnalytics();
-        });
-        
-        async function deleteEntry(id) { if(confirm('Delete?')) { await DataStore.delete(id); if(document.getElementById('tab-calendar').classList.contains('active')) { renderCalendar(); closeDetailsModal(); } else { renderAnalytics(); } } }
+        async function resetData(s) { if(!confirm("Sure?")) return; let d = await DataStore.getAll(); const n = new Date(); if(s==='all') d=[]; else if(s==='week') { const c=new Date(); c.setDate(n.getDate()-7); d=d.filter(x=>new Date(x.date)); } else if(s==='month') { const c=new Date(); c.setMonth(n.getMonth()-1); d=d.filter(x=>new Date(x.date)); } await DataStore.save(d); alert('Done'); location.reload(); }
+        document.getElementById('entryForm').addEventListener('submit', async (e) => { e.preventDefault(); const date=document.getElementById('inputDate').value; const amount=parseFloat(document.getElementById('inputAmount').value); const notes=document.getElementById('inputNotes').value; let strategy=null; document.querySelectorAll('input[name="strategy"]').forEach(r=>{if(r.checked)strategy=r.value;}); if(!date||isNaN(amount))return; await DataStore.add({id:Date.now(),date,amount,notes,strategy}); closeEntryModal(); document.getElementById('inputAmount').value=''; if(document.getElementById('tab-calendar').classList.contains('active')) renderCalendar(); else renderAnalytics(); });
+        async function deleteEntry(id) { if(confirm('Delete?')) { await DataStore.delete(id); if(document.getElementById('tab-calendar').classList.contains('active')) { renderCalendar(); closeDetailsModal(); } else renderAnalytics(); } }
         function changeMonth(o) { currentDate.setMonth(currentDate.getMonth()+o); renderCalendar(); }
         function openEntryModal() { document.getElementById('entryModal').classList.remove('hidden'); }
         function closeEntryModal() { document.getElementById('entryModal').classList.add('hidden'); }
@@ -547,8 +476,8 @@
         function closeDetailsModal() { document.getElementById('detailsModal').classList.add('hidden'); }
         function openEntryFromDetails() { document.getElementById('inputDate').value=document.getElementById('detailDateTitle').innerText; closeDetailsModal(); openEntryModal(); }
         function exportData() { DataStore.getAll().then(d => { const c="data:text/csv;charset=utf-8,Date,Amount,Method,Notes\n"+d.map(x=>`${x.date},${x.amount},${x.strategy||''},"${x.notes||''}"`).join("\n"); const a=document.createElement("a"); a.href=encodeURI(c); a.download="backup.csv"; document.body.appendChild(a); a.click(); }); }
-
-        init();
+        
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
